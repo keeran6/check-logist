@@ -1,6 +1,6 @@
 # Django settings for hephaestus project.
 
-
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
