@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 
 class Branch(models.Model):
     class Meta:
-        verbose_name = 'филиал'
-        verbose_name_plural = 'филиалы'
+        verbose_name = 'С„РёР»РёР°Р»'
+        verbose_name_plural = 'С„РёР»РёР°Р»С‹'
         ordering = ('name',)    
     def __unicode__(self):
         return self.name
-    name = models.CharField(max_length=32, blank=False, null=False, verbose_name='название')
+    name = models.CharField(max_length=32, blank=False, null=False, verbose_name='РЅР°Р·РІР°РЅРёРµ')
