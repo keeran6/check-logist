@@ -14,8 +14,13 @@ class PersonAdmin(ModelAdmin):
 class CustomerAdmin(PersonAdmin):
     exclude = ('birthday', 'name', 'address',)
 
+class ExecutorAdmin(PersonAdmin):
+    readonly_fields = ('total_debt', 'appearance_date', 'last_contact')
+    list_display = ('surname', 'name', 'free_datetime', 'current_order', 'phone', 'address', 'birthday', 'total_debt',)
+    list_filter = ('branch',)
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Broker, PersonAdmin)
 admin.site.register(Dispatcher, PersonAdmin)
-admin.site.register(Executor, PersonAdmin)
+admin.site.register(Executor, ExecutorAdmin)
