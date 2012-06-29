@@ -16,7 +16,7 @@ class CustomerAdmin(PersonAdmin):
 
 class ExecutorAdmin(PersonAdmin):
     readonly_fields = ('total_debt', 'appearance_date', 'last_contact')
-    list_display = ('surname', 'name', 'free_datetime', 'current_order', 'phone', 'address', 'birthday', 'total_debt',)
+    list_display = ('name', 'free_datetime', 'current_order', 'phone', 'address', 'birthday', 'total_debt',)
     list_filter = ('branch',)
 
 admin.site.register(Person, PersonAdmin)

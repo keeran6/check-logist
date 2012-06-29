@@ -6,7 +6,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-     ('Alex Longer', 'hephaestus@gmail.com'),
+     ('Alex Longer', 'hephaestus2000@gmail.com'),
 )
 
 
@@ -109,7 +109,7 @@ ROOT_URLCONF = 'hephaestus.urls'
 WSGI_APPLICATION = 'hephaestus.wsgi.application'
 
 TEMPLATE_DIRS = (
-    os.path.dirname(__file__) + '/templates/'
+    os.path.join(os.path.dirname(__file__), '../templates'),
 )
 
 INSTALLED_APPS = (
