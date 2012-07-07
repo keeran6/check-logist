@@ -7,17 +7,22 @@ Created on 25.06.2012
 from django.contrib import admin
 from persons.models import Person, Customer, Broker, Dispatcher, Executor
 from django.contrib.admin import ModelAdmin
+from persons.forms import ExecutorForm
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
     
 class CustomerAdmin(PersonAdmin):
-    exclude = ('birthday', 'name', 'address',)
+    exclude = ('birthday', 'address',)
 
 class ExecutorAdmin(PersonAdmin):
-    readonly_fields = ('total_debt', 'appearance_date', 'last_contact')
-    list_display = ('name', 'free_datetime', 'current_order', 'phone', 'address', 'birthday', 'total_debt',)
+    form = ExecutorForm
+    readonly_fields = ('total_debt', 'appearance_date', 'last_contact',)
+    list_display = ('name', 'free_datetime', 'current_order', 'note', 'phone', 'address', 'age', 'total_debt',)
     list_filter = ('branch',)
+    
+    def reject(self):
+        pass
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)

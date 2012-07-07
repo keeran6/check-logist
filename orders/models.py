@@ -2,6 +2,7 @@
 from django.db import models
 from prices.models import Branch, PaymentMethod, Service
 from django.db.models.base import Model
+from persons.models import Executor
 
 class Work(Model):
     '''
@@ -22,10 +23,12 @@ class Work(Model):
     customer_balance = models.FloatField(default=0.0, verbose_name='баланс клиента')
     broker_balance   = models.FloatField(default=0.0, verbose_name='баланс посредника')
 
-class Order(Model):
+
+class BaseOrder(Model):
     class Meta:
         verbose_name = 'заказ'
         verbose_name_plural = 'заказы'
+        abstract = True
     def __unicode__(self):
         return ' '.join((unicode(self.customer), unicode(self.datetime)))
     dispatcher          = models.ForeignKey('persons.Dispatcher', verbose_name='диспетчер')
@@ -36,8 +39,24 @@ class Order(Model):
     service             = models.ForeignKey(Service, verbose_name='услуга')
     datetime            = models.DateTimeField(verbose_name='дата/время заказа')
     executors_required  = models.IntegerField(default=0, verbose_name='исполнителей требуется')
-    start_place         = models.CharField(max_length=128, verbose_name='место начала')
-    finish_place        = models.CharField(max_length=128, blank=True, verbose_name='место окончания')
+    start               = models.CharField(max_length=128, verbose_name='место начала')
+    finish              = models.CharField(max_length=128, blank=True, verbose_name='место окончания')
+    persons             = models.CharField(max_length=128, blank=True, verbose_name='контакты')
     description         = models.TextField(max_length=256, blank=True, verbose_name='описание')
     cargo               = models.CharField(max_length=64, verbose_name='груз')
     payment_method      = models.ForeignKey(PaymentMethod, verbose_name='способ оплаты')
+
+class Order(BaseOrder):
+    executors           = models.ManyToManyField(Executor, through='Work')
+
+class Plan(BaseOrder):
+    class Meta:
+        verbose_name = 'план'
+        verbose_name_plural = 'планы'
+    executors_accepted  = models.IntegerField(default=0, verbose_name='приняли')
+    executors_set       = models.IntegerField(default=0, verbose_name='отправлено')
+        
+    def save(self, force_insert=False, force_update=False, using=None):
+        dict((field.attname, getattr(self, field.a)) for field in BaseOrder._meta.fields)
+            
+        BaseOrder.save(self, force_insert=force_insert, force_update=force_update, using=using) 
