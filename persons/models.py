@@ -32,18 +32,34 @@ class Dispatcher(Person):
         verbose_name = 'диспетчер'
         verbose_name_plural = 'диспетчеры'
         
-class Executor(Person):
+class BaseExecutor(Person):
     class Meta:
         verbose_name = 'исполнитель'
         verbose_name_plural = 'исполнители'
-    def age(self):
-        return (datetime.now().date() - self.birthday).days / 365
-    def current_order(self):
-        try:
-            return self.order_set.order_by('-datetime')[0]
-        except IndexError:
-            return None
-    current_order.short_description = 'текущий заказ'
+        abstract = True
+    #===========================================================================
+    # def age(self):
+    #    return (datetime.now().date() - self.birthday).days / 365
+    # age.short_description = 'возраст'
+    # def current_order_accepted(self):
+    #    if self.current_order is None:
+    #        return None
+    #    return self.work_set.get(order=self.current_order).accepted 
+    # current_order_accepted.short_description = 'принял'
+    # current_order_accepted.boolean = True
+    #===========================================================================
     free_datetime = models.DateTimeField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
     last_contact  = models.DateTimeField(verbose_name='контакт', default=datetime.now)
-    
+
+class Executor(BaseExecutor):
+    def get_current_order(self):
+        return ExtendedExecutor.objects.get(pk=self).current_order
+    current_order = property(get_current_order)
+class ExtendedExecutor(BaseExecutor):
+    class Meta(BaseExecutor.Meta):
+        db_table = 'persons_executor_extended'
+        verbose_name_plural = 'исполнители'
+    def get_executor(self):
+        return 
+    current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
+    current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)

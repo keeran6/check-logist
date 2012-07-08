@@ -30,7 +30,7 @@ class BaseOrder(Model):
         verbose_name_plural = 'заказы'
         abstract = True
     def __unicode__(self):
-        return ' '.join((unicode(self.customer), unicode(self.datetime)))
+        return ' '.join((unicode(self.customer), unicode(self.datetime.strftime('%d.%m.%Y %H:%M'))))
     dispatcher          = models.ForeignKey('persons.Dispatcher', verbose_name='диспетчер')
     broker              = models.ForeignKey('persons.Broker', null=True, blank=True, verbose_name='посредник')
     customer            = models.ForeignKey('persons.Customer', verbose_name='заказчик')
@@ -54,9 +54,4 @@ class Plan(BaseOrder):
         verbose_name = 'план'
         verbose_name_plural = 'планы'
     executors_accepted  = models.IntegerField(default=0, verbose_name='приняли')
-    executors_set       = models.IntegerField(default=0, verbose_name='отправлено')
-        
-    def save(self, force_insert=False, force_update=False, using=None):
-        dict((field.attname, getattr(self, field.a)) for field in BaseOrder._meta.fields)
-            
-        BaseOrder.save(self, force_insert=force_insert, force_update=force_update, using=using) 
+    executors_set       = models.IntegerField(default=0, verbose_name='отправлено') 
