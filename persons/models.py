@@ -37,19 +37,8 @@ class BaseExecutor(Person):
         verbose_name = 'исполнитель'
         verbose_name_plural = 'исполнители'
         abstract = True
-    #===========================================================================
-    # def age(self):
-    #    return (datetime.now().date() - self.birthday).days / 365
-    # age.short_description = 'возраст'
-    # def current_order_accepted(self):
-    #    if self.current_order is None:
-    #        return None
-    #    return self.work_set.get(order=self.current_order).accepted 
-    # current_order_accepted.short_description = 'принял'
-    # current_order_accepted.boolean = True
-    #===========================================================================
     free_datetime = models.DateTimeField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
-    last_contact  = models.DateTimeField(verbose_name='контакт', default=datetime.now)
+    last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
 
 class Executor(BaseExecutor):
     def get_current_order(self):
@@ -63,3 +52,6 @@ class ExtendedExecutor(BaseExecutor):
         return 
     current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
     current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)
+    def age(self):
+        return (datetime.now().date() - self.birthday).days / 365
+    age.short_description = 'возраст'

@@ -23,7 +23,6 @@ class Work(Model):
     customer_balance = models.FloatField(default=0.0, verbose_name='баланс клиента')
     broker_balance   = models.FloatField(default=0.0, verbose_name='баланс посредника')
 
-
 class BaseOrder(Model):
     class Meta:
         verbose_name = 'заказ'
@@ -41,14 +40,20 @@ class BaseOrder(Model):
     executors_required  = models.IntegerField(default=0, verbose_name='исполнителей требуется')
     start               = models.CharField(max_length=128, verbose_name='место начала')
     finish              = models.CharField(max_length=128, blank=True, verbose_name='место окончания')
-    persons             = models.CharField(max_length=128, blank=True, verbose_name='контакты')
+    contacts            = models.CharField(max_length=128, blank=True, verbose_name='контакты')
     description         = models.TextField(max_length=256, blank=True, verbose_name='описание')
     cargo               = models.CharField(max_length=64, verbose_name='груз')
     payment_method      = models.ForeignKey(PaymentMethod, verbose_name='способ оплаты')
-
+    sms                 = models.TextField(max_length=1024, verbose_name='SMS', null=True, blank=True)
+    def cut_sms(self):
+        return u'Заказчик: %s; %s; %s человек %s; %s; Груз: %s%s; Оплата: %s' \
+            % (self.customer, self.datetime.strftime('%d/%m/%y %H:%M'), self.executors_required, self.start, self.contacts, self.cargo,\
+               u'; ' + self.description if len(self.description) > 0 else u'', self.payment_method)
+    cut_sms.short_description = 'сокращенное смс'
+    
 class Order(BaseOrder):
     executors           = models.ManyToManyField(Executor, through='Work')
-
+    
 class Plan(BaseOrder):
     class Meta:
         verbose_name = 'план'
