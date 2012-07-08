@@ -2,7 +2,7 @@
 from django import forms
 from django.db.models import F
 from persons.models import Executor
-from orders.models import Plan, Order
+from orders.models import ExtendedPlan, Order
 import re
 
 class ExecutorForm(forms.ModelForm):
@@ -10,7 +10,7 @@ class ExecutorForm(forms.ModelForm):
     class Meta:
         model = Executor
     
-    current_order = forms.ModelChoiceField(queryset=Plan.objects.filter(executors_set__lt=F('executors_required')), label='Текущий заказ', required=False)
+    current_order = forms.ModelChoiceField(queryset=ExtendedPlan.objects.filter(executors_set__lt=F('executors_required')), label='Текущий заказ', required=False)
     
     def __init__(self, *args, **kwargs):
         if not kwargs.has_key('initial'):

@@ -6,7 +6,8 @@ Created on 25.06.2012
 '''
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin
-from orders.models import Work, Order, Plan
+from orders.models import Work, Order, ExtendedPlan, ExtendedOrder,\
+    ExtendedFinishedOrder
 from django.contrib.admin.options import csrf_protect_m
 from django.db import transaction
 from django.http import HttpResponseRedirect
@@ -34,8 +35,6 @@ class OrderAdmin(ModelAdmin):
     form = OrderForm
     save_on_top = True
     inlines = [OrderWorkInline]
-    list_display = ('customer', 'datetime',)
-    list_filter = ('branch',)
     def get_form(self, request, obj=None, **kwargs):
         if request.method == 'POST' and obj is None:
             try:
@@ -46,8 +45,17 @@ class OrderAdmin(ModelAdmin):
     def response_add(self, request, obj, post_url_continue='../%s/'):
         messages.add_message(request, messages.WARNING, u'Заказ добавлен! Тщательно проверьте его на наличие ошибок.')
         return HttpResponseRedirect(urlresolvers.reverse('admin:orders_order_change', args=(obj.id,)))#ModelAdmin.response_add(self, request, obj, post_url_continue=urlresolvers.reverse('admin:orders_order_add'))
+    @csrf_protect_m
+    def changelist_view(self, request, extra_context=None):
+        return HttpResponseRedirect(urlresolvers.reverse('admin:orders_extendedorder_changelist'))
 
-class PlanAdmin(OrderAdmin):
+
+class ExtendedOrderAdmin(ModelAdmin):
+    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'start', 'payment_method', 'dispatcher')
+    list_filter = ('branch', 'payment_method', 'dispatcher')
+    ordering = ('-datetime', 'id')
+    date_hierarchy = 'datetime'
+    search_fields = ['customer__name', 'branch__name', 'start', 'payment_method__name', 'dispatcher__name']
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, form_url='', extra_context=None):\
@@ -62,7 +70,14 @@ class PlanAdmin(OrderAdmin):
     @transaction.commit_on_success
     def add_view(self, request, form_url='', extra_context=None):
         return HttpResponseRedirect(urlresolvers.reverse('admin:orders_order_add'))
-    
+
+class WorkAdmin(ModelAdmin):
+    list_display = ('order', 'executor', 'accepted', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
+    ordering = ('order', 'id')
+    search_fields = ['order__customer__name', 'executor__name']
+
 admin.site.register(Order, OrderAdmin)
-admin.site.register(Plan, PlanAdmin)
-admin.site.register(Work)
+admin.site.register(ExtendedOrder, ExtendedOrderAdmin)
+admin.site.register(ExtendedPlan, ExtendedOrderAdmin)
+admin.site.register(ExtendedFinishedOrder, ExtendedOrderAdmin)
+admin.site.register(Work, WorkAdmin)

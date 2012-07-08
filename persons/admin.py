@@ -18,15 +18,16 @@ from datetime import datetime
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
+    list_display = ('name', 'phone', 'total_debt', 'branch')
+    list_filter = ('branch',)
+    search_fields = ['name', 'phone', 'branch__name']
     
 class CustomerAdmin(PersonAdmin):
     exclude = ('birthday', 'address',)
-    save_on_top = True
 
 class ExecutorAdmin(PersonAdmin):
     form = ExecutorForm
     readonly_fields = ('total_debt', 'appearance_date', 'last_contact',)
-    save_on_top = True
     @csrf_protect_m
     def changelist_view(self, request, extra_context=None):
         return HttpResponseRedirect(urlresolvers.reverse('admin:persons_extendedexecutor_changelist'))
@@ -43,9 +44,9 @@ class ExecutorAdmin(PersonAdmin):
     
 class ExtendedExecutorAdmin(PersonAdmin):
     list_display = ('name', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'age', 'address', 'total_debt',)
-    list_filter = ('branch',)
+    list_filter = ('branch', 'current_order_accepted')
+    search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
     ordering = ('-current_order_accepted', 'free_datetime')
-    save_on_top = True
     def reject_order(self, request, queryset):
         for executor in queryset:
             Work.objects.filter(order=executor.current_order, executor=executor).delete()

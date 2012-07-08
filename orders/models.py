@@ -3,6 +3,7 @@ from django.db import models
 from prices.models import Branch, PaymentMethod, Service
 from django.db.models.base import Model
 from persons.models import Executor
+from django.db.models import F
 
 class Work(Model):
     '''
@@ -11,6 +12,8 @@ class Work(Model):
     class Meta:
         verbose_name = 'работа'
         verbose_name_plural = 'работы'
+    def __unicode__(self):
+        return u'Работа (Заказ:%s; Исполнитель:%s)' % (self.order, self.executor)
     quantity         = models.FloatField(default=0.0, verbose_name='количество')
     executor         = models.ForeignKey('persons.Executor', related_name='test', verbose_name='исполнитель')
     order            = models.ForeignKey('Order', verbose_name='заказ')
@@ -37,7 +40,7 @@ class BaseOrder(Model):
     branch              = models.ForeignKey(Branch, verbose_name='филиал')
     service             = models.ForeignKey(Service, verbose_name='услуга')
     datetime            = models.DateTimeField(verbose_name='дата/время заказа')
-    executors_required  = models.IntegerField(default=0, verbose_name='исполнителей требуется')
+    executors_required  = models.IntegerField(default=0, verbose_name='требуется')
     start               = models.CharField(max_length=128, verbose_name='место начала')
     finish              = models.CharField(max_length=128, blank=True, verbose_name='место окончания')
     contacts            = models.CharField(max_length=128, blank=True, verbose_name='контакты')
@@ -53,10 +56,33 @@ class BaseOrder(Model):
     
 class Order(BaseOrder):
     executors           = models.ManyToManyField(Executor, through='Work')
+
+class ExtendedOrder(BaseOrder):
+    class Meta(BaseOrder.Meta):
+        db_table = 'orders_order_extended'
+    executors_accepted  = models.IntegerField(default=0, verbose_name='приняли')
+    executors_set       = models.IntegerField(default=0, verbose_name='отправлено')
+    executors_verified       = models.IntegerField(default=0, verbose_name='выверено')
+        
+
+class ExtendedPlanManager(models.Manager):
+    def get_query_set(self):
+        return super(ExtendedPlanManager, self).get_query_set().filter(executors_accepted__lt=F('executors_required'))
     
-class Plan(BaseOrder):
+class ExtendedPlan(ExtendedOrder):
     class Meta:
         verbose_name = 'план'
         verbose_name_plural = 'планы'
-    executors_accepted  = models.IntegerField(default=0, verbose_name='приняли')
-    executors_set       = models.IntegerField(default=0, verbose_name='отправлено') 
+        proxy = True
+    objects = ExtendedPlanManager()
+    
+class FinishedOrderManager(models.Manager):
+    def get_query_set(self):
+        return super(FinishedOrderManager, self).get_query_set().filter(executors_accepted=F('executors_required')).filter(executors_verified__lt=F('executors_required'))
+    
+class ExtendedFinishedOrder(ExtendedOrder):
+    class Meta:
+        verbose_name = 'выверка'
+        verbose_name_plural = 'выверка'
+        proxy = True
+    objects = FinishedOrderManager()
