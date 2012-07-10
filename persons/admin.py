@@ -43,7 +43,7 @@ class ExecutorAdmin(PersonAdmin):
         return PersonAdmin.change_view(self, request, object_id, form_url=form_url, extra_context=extra_context)
     
 class ExtendedExecutorAdmin(PersonAdmin):
-    list_display = ('name', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'age', 'address', 'total_debt',)
+    list_display = ('name', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'address', 'total_debt',)
     list_filter = ('branch', 'current_order_accepted')
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
     ordering = ('-current_order_accepted', 'free_datetime')

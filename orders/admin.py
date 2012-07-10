@@ -12,10 +12,12 @@ from django.contrib.admin.options import csrf_protect_m
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.core import urlresolvers
-from orders.forms import OrderForm
+from orders.forms import OrderForm, WorkForm
 from persons.models import Dispatcher
+from prices.models import Price, PaymentMethod
 
 class OrderWorkInline(admin.TabularInline):
+    form = WorkForm
     model = Work
     extra = 10
     max_num = 10
@@ -32,6 +34,13 @@ class OrderAdmin(ModelAdmin):
             'fields': ('sms', 'cut_sms')
         }),
     )
+    @csrf_protect_m
+    @transaction.commit_on_success
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        return ModelAdmin.change_view(self, request, object_id, form_url=form_url, extra_context={
+                                                                                                  'prices': Price.objects.all().values(),
+                                                                                                  'payment_methods': PaymentMethod.objects.all().values()
+                                                                                                  })
     form = OrderForm
     save_on_top = True
     inlines = [OrderWorkInline]
@@ -56,6 +65,7 @@ class ExtendedOrderAdmin(ModelAdmin):
     ordering = ('-datetime', 'id')
     date_hierarchy = 'datetime'
     search_fields = ['customer__name', 'branch__name', 'start', 'payment_method__name', 'dispatcher__name']
+    list_per_page = 50
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, form_url='', extra_context=None):\
@@ -75,6 +85,7 @@ class WorkAdmin(ModelAdmin):
     list_display = ('order', 'executor', 'accepted', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
     ordering = ('order', 'id')
     search_fields = ['order__customer__name', 'executor__name']
+    #date_hierarchy = 'order__datetime'
 
 admin.site.register(Order, OrderAdmin)
 admin.site.register(ExtendedOrder, ExtendedOrderAdmin)

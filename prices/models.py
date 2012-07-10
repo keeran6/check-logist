@@ -37,6 +37,15 @@ class Service(models.Model):
         return self.name
     name = models.CharField(max_length=128, verbose_name=u'название')
     
+class ExecutorStatus(models.Model):
+    class Meta:
+        verbose_name = 'занятость'
+        verbose_name_plural = 'занятость'
+        ordering = ('name',)
+    def __unicode__(self):
+        return self.name
+    name = models.CharField(max_length=32, verbose_name='название')
+        
 class Price(models.Model):
     class Meta:
         verbose_name = 'цена'
@@ -45,6 +54,7 @@ class Price(models.Model):
     payment_method   = models.ForeignKey(PaymentMethod, verbose_name='способ оплаты')
     branch           = models.ForeignKey(Branch, verbose_name='филиал')
     service          = models.ForeignKey(Service, verbose_name='услуга')
+    executor_status  = models.ForeignKey(ExecutorStatus, verbose_name='занятость')
     executor_percent = models.FloatField(default=0, verbose_name='% исполнителя')
     broker_percent   = models.FloatField(default=0, verbose_name='% посредника')
     cost             = models.FloatField(default=0, verbose_name='цена')

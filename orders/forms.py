@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from orders.models import Order
+from orders.models import Order, Work
 from persons.models import Customer, Broker
 import re
 from datetime import datetime
@@ -138,4 +138,13 @@ class OrderForm(forms.ModelForm):
             if not kwargs.has_key('initial'):
                 kwargs['initial'] = {}
             kwargs['initial']['cut_sms'] = kwargs['instance'].cut_sms() 
-            super(OrderForm, self).__init__(*args, **kwargs)
+        for elem in ('service', 'branch', 'payment_method'):
+            self.fields[elem].widget.attrs['onMouseUp'] = 'allChanged()'
+            self.fields[elem].widget.attrs['onKeyUp'] = 'allChanged()'
+
+class WorkForm(forms.models.ModelForm):
+    model = Work
+    def __init__(self, *args, **kwargs):
+        super(WorkForm, self).__init__(*args, **kwargs)
+        self.fields['quantity'].widget.attrs['onKeyUp'] = 'quantityChanged(this.id)'
+        self.fields['total'].widget.attrs['onKeyUp'] = 'totalChanged(this.id)'

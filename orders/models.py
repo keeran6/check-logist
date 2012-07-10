@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from prices.models import Branch, PaymentMethod, Service
+from prices.models import Branch, PaymentMethod, Service, ExecutorStatus
 from django.db.models.base import Model
 from persons.models import Executor
 from django.db.models import F
@@ -18,6 +18,7 @@ class Work(Model):
     executor         = models.ForeignKey('persons.Executor', related_name='test', verbose_name='исполнитель')
     order            = models.ForeignKey('Order', verbose_name='заказ')
     accepted         = models.BooleanField(default=False, verbose_name='принято')
+    executor_status  = models.ForeignKey(ExecutorStatus, verbose_name='занятость')
     fee_through      = models.ForeignKey('persons.Person', null=True, blank=True, verbose_name='расчет через')
     total            = models.FloatField(default=0.0, verbose_name='стоимость работы')
     broker_sum       = models.FloatField(default=0.0, verbose_name='комиссия')
@@ -25,6 +26,7 @@ class Work(Model):
     executor_balance = models.FloatField(default=0.0, verbose_name='баланс исполнителя')
     customer_balance = models.FloatField(default=0.0, verbose_name='баланс клиента')
     broker_balance   = models.FloatField(default=0.0, verbose_name='баланс посредника')
+    
 
 class BaseOrder(Model):
     class Meta:

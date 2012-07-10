@@ -53,5 +53,7 @@ class ExtendedExecutor(BaseExecutor):
     current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
     current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)
     def age(self):
+        if self.birthday is None:
+            return None
         return (datetime.now().date() - self.birthday).days / 365
     age.short_description = 'возраст'
