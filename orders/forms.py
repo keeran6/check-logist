@@ -131,13 +131,13 @@ class OrderForm(forms.ModelForm):
                     pass
 
     def __init__(self, *args, **kwargs):
-        super(OrderForm, self).__init__(*args, **kwargs)
-        if not kwargs.has_key('instance') and self.data.has_key('sms') and len(self.data['sms']) > 0:
-            self.autofill_on_sms()
         if kwargs.has_key('instance') and kwargs['instance'] is not None:
             if not kwargs.has_key('initial'):
                 kwargs['initial'] = {}
-            kwargs['initial']['cut_sms'] = kwargs['instance'].cut_sms() 
+            kwargs['initial']['cut_sms'] = kwargs['instance'].cut_sms()
+        super(OrderForm, self).__init__(*args, **kwargs)
+        if not kwargs.has_key('instance') and self.data.has_key('sms') and len(self.data['sms']) > 0:
+            self.autofill_on_sms() 
         for elem in ('service', 'branch', 'payment_method'):
             self.fields[elem].widget.attrs['onMouseUp'] = 'allChanged()'
             self.fields[elem].widget.attrs['onKeyUp'] = 'allChanged()'

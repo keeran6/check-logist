@@ -65,7 +65,7 @@ class ExtendedOrderAdmin(ModelAdmin):
     ordering = ('-datetime', 'id')
     date_hierarchy = 'datetime'
     search_fields = ['customer__name', 'branch__name', 'start', 'payment_method__name', 'dispatcher__name']
-    list_per_page = 50
+    list_select_related = True
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, form_url='', extra_context=None):\
