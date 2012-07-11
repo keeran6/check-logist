@@ -85,6 +85,7 @@ class WorkAdmin(ModelAdmin):
     list_display = ('order', 'executor', 'accepted', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
     ordering = ('order', 'id')
     search_fields = ['order__customer__name', 'executor__name']
+    list_select_related = True
     #date_hierarchy = 'order__datetime'
 
 admin.site.register(Order, OrderAdmin)
