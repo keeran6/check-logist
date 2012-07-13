@@ -38,10 +38,13 @@ class BaseExecutor(Person):
         verbose_name = 'исполнитель'
         verbose_name_plural = 'исполнители'
         abstract = True
+        ordering = ('name',)
     free_datetime = models.DateTimeField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
     last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
 
 class Executor(BaseExecutor):
+    class Meta(BaseExecutor.Meta):
+        ordering = ('name',)
     def get_current_order(self):
         return ExtendedExecutor.objects.get(pk=self).current_order
     current_order = property(get_current_order)

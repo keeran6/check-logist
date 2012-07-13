@@ -66,6 +66,8 @@ class ExtendedOrder(BaseOrder):
     executors_accepted  = models.IntegerField(default=0, verbose_name='+')
     executors_set       = models.IntegerField(default=0, verbose_name='-')
     executors_verified       = models.IntegerField(default=0, verbose_name='=')
+    quantity = models.FloatField(default=0, verbose_name='колво')
+    total = models.FloatField(default=0, verbose_name='сумма')
         
 
 class ExtendedPlanManager(models.Manager):

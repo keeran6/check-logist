@@ -60,7 +60,7 @@ class OrderAdmin(ModelAdmin):
 
 
 class ExtendedOrderAdmin(ModelAdmin):
-    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'start', 'payment_method',)
+    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'payment_method', 'quantity', 'total', 'start',)
     list_filter = ('branch', 'payment_method', 'dispatcher')
     ordering = ('-datetime', 'id')
     date_hierarchy = 'datetime'
