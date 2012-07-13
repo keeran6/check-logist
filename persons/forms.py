@@ -3,6 +3,7 @@ from django import forms
 from django.db.models import F
 from persons.models import Executor
 from orders.models import ExtendedPlan, Order
+from prices.models import ExecutorStatus
 import re
 
 class ExecutorForm(forms.ModelForm):
@@ -33,7 +34,7 @@ class ExecutorForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super(ExecutorForm, self).save(commit=commit)
         if instance.pk and instance.current_order is None and self.cleaned_data['current_order']:
-            instance.work_set.create(order=Order.objects.get(pk=self.cleaned_data['current_order'].pk), executor=instance)
+            instance.work_set.create(order=Order.objects.get(pk=self.cleaned_data['current_order'].pk), executor=instance, executor_status=ExecutorStatus.objects.get(name=u'Найм'))
         # phone corrector
         pat = re.compile('(?:8|\+7)(\d{3})(\d{3})(\d{2})(\d{2})')
         instance.phone = pat.sub(r'8-\1-\2-\3-\4', instance.phone)

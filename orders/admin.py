@@ -19,9 +19,9 @@ from prices.models import Price, PaymentMethod
 class OrderWorkInline(admin.TabularInline):
     form = WorkForm
     model = Work
-    extra = 10
+    extra = 1
     max_num = 10
-
+    
 class OrderAdmin(ModelAdmin):
     fieldsets = (
         (None, {
@@ -60,7 +60,7 @@ class OrderAdmin(ModelAdmin):
 
 
 class ExtendedOrderAdmin(ModelAdmin):
-    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'start', 'payment_method', 'dispatcher')
+    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'start', 'payment_method',)
     list_filter = ('branch', 'payment_method', 'dispatcher')
     ordering = ('-datetime', 'id')
     date_hierarchy = 'datetime'
@@ -82,8 +82,8 @@ class ExtendedOrderAdmin(ModelAdmin):
         return HttpResponseRedirect(urlresolvers.reverse('admin:orders_order_add'))
 
 class WorkAdmin(ModelAdmin):
-    list_display = ('order', 'executor', 'accepted', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
-    ordering = ('order', 'id')
+    list_display = ('order', 'executor', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
+    ordering = ('-order__datetime', 'id')
     search_fields = ['order__customer__name', 'executor__name']
     list_select_related = True
     #date_hierarchy = 'order__datetime'

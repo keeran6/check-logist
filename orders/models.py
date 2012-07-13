@@ -18,6 +18,7 @@ class Work(Model):
     executor         = models.ForeignKey('persons.Executor', related_name='test', verbose_name='исполнитель')
     order            = models.ForeignKey('Order', verbose_name='заказ')
     accepted         = models.BooleanField(default=False, verbose_name='принято')
+    finished         = models.BooleanField(default=False, verbose_name='выполнено')
     executor_status  = models.ForeignKey(ExecutorStatus, verbose_name='занятость')
     fee_through      = models.ForeignKey('persons.Person', null=True, blank=True, verbose_name='расчет через')
     total            = models.FloatField(default=0.0, verbose_name='стоимость работы')
@@ -42,7 +43,7 @@ class BaseOrder(Model):
     branch              = models.ForeignKey(Branch, verbose_name='филиал')
     service             = models.ForeignKey(Service, verbose_name='услуга')
     datetime            = models.DateTimeField(verbose_name='дата/время заказа')
-    executors_required  = models.IntegerField(default=0, verbose_name='требуется')
+    executors_required  = models.IntegerField(default=0, verbose_name='?')
     start               = models.CharField(max_length=128, verbose_name='место начала')
     finish              = models.CharField(max_length=128, blank=True, verbose_name='место окончания')
     contacts            = models.CharField(max_length=128, blank=True, verbose_name='контакты')
@@ -62,9 +63,9 @@ class Order(BaseOrder):
 class ExtendedOrder(BaseOrder):
     class Meta(BaseOrder.Meta):
         db_table = 'orders_order_extended'
-    executors_accepted  = models.IntegerField(default=0, verbose_name='приняли')
-    executors_set       = models.IntegerField(default=0, verbose_name='отправлено')
-    executors_verified       = models.IntegerField(default=0, verbose_name='выверено')
+    executors_accepted  = models.IntegerField(default=0, verbose_name='+')
+    executors_set       = models.IntegerField(default=0, verbose_name='-')
+    executors_verified       = models.IntegerField(default=0, verbose_name='=')
         
 
 class ExtendedPlanManager(models.Manager):

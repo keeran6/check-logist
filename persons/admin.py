@@ -21,6 +21,7 @@ class PersonAdmin(ModelAdmin):
     list_display = ('name', 'phone', 'total_debt', 'branch')
     list_filter = ('branch',)
     search_fields = ['name', 'phone', 'branch__name']
+    ordering = ('name',)
     
 class CustomerAdmin(PersonAdmin):
     exclude = ('birthday', 'address',)
@@ -46,7 +47,7 @@ class ExtendedExecutorAdmin(PersonAdmin):
     list_display = ('name', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'address', 'total_debt',)
     list_filter = ('branch', 'current_order_accepted')
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
-    ordering = ('-current_order_accepted', 'free_datetime')
+    ordering = ('-current_order_accepted', 'free_datetime', 'current_order__id')
     def reject_order(self, request, queryset):
         for executor in queryset:
             Work.objects.filter(order=executor.current_order, executor=executor).delete()
@@ -57,7 +58,12 @@ class ExtendedExecutorAdmin(PersonAdmin):
             Work.objects.filter(order=executor.current_order, executor=executor).update(accepted=True)
         messages.add_message(request, messages.WARNING, 'Заказы помечены как подтвержденные исполнителями! Убедитесь, что они действительно подтвердили заказы!')
     accept_order.short_description = 'Исполнитель подтвердил заказ'
-    actions = [reject_order, accept_order]
+    def finish_order(self, request, queryset):
+        for executor in queryset:
+            Work.objects.filter(order=executor.current_order, executor=executor).update(finished=True)
+        messages.add_message(request, messages.WARNING, 'Заказы помечены как завершенные исполнителями!')
+    finish_order.short_description = 'Исполнитель завершил заказ'
+    actions = [reject_order, accept_order, finish_order]
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, form_url='', extra_context=None):\

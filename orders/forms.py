@@ -97,7 +97,7 @@ class OrderForm(forms.ModelForm):
     def autofill_broker(self):
         if not self.data['broker']:
             try:
-                self.data['broker'] = Broker.objects.get(name__iexact=u'СамЭкспресс')
+                self.data['broker'] = Broker.objects.get(id=2)
             except:
                 pass
 
@@ -141,6 +141,7 @@ class OrderForm(forms.ModelForm):
         for elem in ('service', 'branch', 'payment_method'):
             self.fields[elem].widget.attrs['onMouseUp'] = 'allChanged()'
             self.fields[elem].widget.attrs['onKeyUp'] = 'allChanged()'
+        self.fields['executors_required'].label = 'Требуется исполнителей'
 
 class WorkForm(forms.models.ModelForm):
     model = Work

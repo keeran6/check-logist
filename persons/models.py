@@ -6,6 +6,7 @@ class Person(models.Model):
     class Meta:
         verbose_name = 'лицо'
         verbose_name_plural = 'лица'
+        ordering = ('name',)
     def __unicode__(self):
         return self.name
     name            = models.CharField(max_length=128, verbose_name='имя', blank=False, null=False)
