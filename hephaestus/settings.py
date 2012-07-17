@@ -18,7 +18,7 @@ DATABASES = {
         'NAME': 'hephaestus_hephaestus',                      # Or path to database file if using sqlite3.
         'USER': 'hephaestus',                  # Not used with sqlite3.
         'PASSWORD': 'dxn3dxn3',                 # Not used with sqlite3.
-        'HOST': 'mysql.alwaysdata.com',                      # Set to empty string for localhost. Not used with sqlite3.
+        'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
@@ -178,3 +178,4 @@ DATE_INPUT_FORMATS = \
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y')
 TIME_INPUT_FROMATS = ('%H:%M', '%H:%M:%S')
 TIME_FORMAT = 'H:i'
+DATE_FORMAT = 'd.m.y'

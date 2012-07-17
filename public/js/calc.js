@@ -6,7 +6,7 @@ function allChanged() {
 }
 
 function toggleColor(element) {
-	element.style.color = (element.style.color == 'black') ? '#010101' : 'black';
+	element.style.color = (element.style.color == 'rgb(1, 1, 1)') ? 'black' : '#010101';
 }
 function quantityChanged(elem_id) {
 	var id = elem_id.split('-')[1];

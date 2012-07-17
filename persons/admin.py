@@ -5,7 +5,8 @@ Created on 25.06.2012
 @author: Admin
 '''
 from django.contrib import admin
-from persons.models import Person, Customer, Broker, Dispatcher, Executor, ExtendedExecutor
+from persons.models import Person, Customer, Broker, Dispatcher, Executor, ExtendedExecutor,\
+    Debt
 from django.contrib.admin import ModelAdmin
 from persons.forms import ExecutorForm
 from orders.models import Work
@@ -14,7 +15,9 @@ from django.contrib.auth.admin import csrf_protect_m
 from django.http import HttpResponseRedirect
 from django.core import urlresolvers
 from django.db import transaction
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.contrib.admin.filters import SimpleListFilter
+from hephaestus import settings
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
@@ -44,10 +47,10 @@ class ExecutorAdmin(PersonAdmin):
         return PersonAdmin.change_view(self, request, object_id, form_url=form_url, extra_context=extra_context)
     
 class ExtendedExecutorAdmin(PersonAdmin):
-    list_display = ('name', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'address', 'total_debt',)
+    list_display = ('name', 'category', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'address', 'total_debt',)
     list_filter = ('branch', 'current_order_accepted')
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
-    ordering = ('-current_order_accepted', 'free_datetime', 'current_order__id')
+    ordering = ('-current_order_accepted', 'current_order__id', 'category', 'free_datetime')
     def reject_order(self, request, queryset):
         for executor in queryset:
             Work.objects.filter(order=executor.current_order, executor=executor).delete()
@@ -79,9 +82,86 @@ class ExtendedExecutorAdmin(PersonAdmin):
     def add_view(self, request, form_url='', extra_context=None):
         return HttpResponseRedirect(urlresolvers.reverse('admin:persons_executor_add'))
     
+    
+class HierarchyDateListFilter(SimpleListFilter):
+
+    def lookups(self, request, model_admin):
+        #year
+        if not request.GET.has_key(self.parameter_name):
+            years = Debt.objects.extra(select={'year': "year(date)"}).distinct().values_list('year', flat=True)
+            return map(None, years, years)
+        try:
+            vals = []
+            current = datetime.strptime(request.GET[self.parameter_name], '%Y')
+            for month in xrange(1, 13):
+                current = current.replace(month=month)
+                string_current = current.strftime('%m.%Y')
+                vals.append((string_current, string_current))
+            return tuple(vals)
+        except:
+            try:
+                now = datetime.strptime(request.GET[self.parameter_name], '%m.%Y')
+                current = now.replace(day=1)
+                vals = []
+                while current.month == now.month:
+                    string_current = current.strftime(settings.DATE_INPUT_FORMATS[0])
+                    vals.append((string_current, string_current))
+                    current += timedelta(days=1)
+                return tuple(vals)
+            except:
+                try:
+                    now = datetime.strptime(request.GET[self.parameter_name], '%d.%m.%Y')
+                    current = now.replace(day=1)
+                    vals = []
+                    while current.month == now.month:
+                        string_current = current.strftime(settings.DATE_INPUT_FORMATS[0])
+                        vals.append((string_current, string_current))
+                        current += timedelta(days=1)
+                    return tuple(vals)
+                except:
+                    years = Debt.objects.extra(select={'year': "year(date)"}).distinct().values_list('year', flat=True)
+                    return map(None, years, years)
+
+    def queryset(self, request, queryset):
+        if self.value() is not None:
+            try:
+                val = datetime.strptime(self.value(), '%Y')
+                val = val.replace(month=1, day=1)
+                if self.parameter_name.endswith('lte'):
+                    val = val.replace(year=val.year + 1)
+            except:
+                try:
+                    val = datetime.strptime(self.value(), '%m.%Y')
+                    val = val.replace(day=1)
+                    if self.parameter_name.endswith('lte'):
+                        val = val.replace(month=val.month + 1)
+                except:
+                    try:
+                        val = datetime.strptime(self.value(), '%d.%m.%Y')
+                    except:
+                        return queryset
+            return queryset.filter(**{self.parameter_name: val})
+
+class GreaterThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
+    title = 'Не раньше'
+    parameter_name = 'date__gte'
+class LessThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
+    title = 'Не позже'
+    parameter_name = 'date__lte'
+
+class DebtAdmin(ModelAdmin):
+    list_display = ('person', 'date', 'total', 'content_object', 'note')
+    search_fields = ('person__name',)
+    list_filter = [GreaterThanOrEqualHierarchyDateListFilter, LessThanOrEqualHierarchyDateListFilter]
+    #date_hierarchy = 'date'
+    ordering = ('-date', 'person')
+    def get_list_display_links(self, request, list_display):
+        return []
+
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Broker, PersonAdmin)
 admin.site.register(Dispatcher, PersonAdmin)
 admin.site.register(Executor, ExecutorAdmin)
 admin.site.register(ExtendedExecutor, ExtendedExecutorAdmin)
+admin.site.register(Debt, DebtAdmin)

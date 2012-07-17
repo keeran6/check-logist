@@ -2,6 +2,8 @@
 from django.db import models
 from prices.models import Branch
 from datetime import datetime
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 class Person(models.Model):
     class Meta:
         verbose_name = 'лицо'
@@ -41,6 +43,7 @@ class BaseExecutor(Person):
         ordering = ('name',)
     free_datetime = models.DateTimeField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
     last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
+    category = models.IntegerField(verbose_name='К', default=0, help_text='0 - новенький, 1 - регулярно работает, 2 - редко работает, 3 - почти не работает, 4 - не работает')
 
 class Executor(BaseExecutor):
     class Meta(BaseExecutor.Meta):
@@ -61,3 +64,15 @@ class ExtendedExecutor(BaseExecutor):
             return None
         return (datetime.now().date() - self.birthday).days / 365
     age.short_description = 'возраст'
+
+class Debt(models.Model):
+    class Meta:
+        verbose_name = 'долг'
+        verbose_name_plural = 'долги'
+    person = models.ForeignKey(Person, verbose_name='лицо')
+    date = models.DateField(verbose_name='дата')
+    total = models.FloatField(verbose_name='сумма')
+    note = models.CharField(max_length=128, verbose_name='примечание')
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey()

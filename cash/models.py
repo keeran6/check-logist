@@ -38,7 +38,7 @@ class Income(MoneyOperation):
     '''
     class Meta(MoneyOperation.Meta):
         verbose_name = 'приход'
-        verbose_name_plural = 'приход'
+        verbose_name_plural = 'приходы'
 
 class Expense(MoneyOperation):
     '''
@@ -46,7 +46,7 @@ class Expense(MoneyOperation):
     '''
     class Meta(MoneyOperation.Meta):
         verbose_name = 'расход'
-        verbose_name_plural = 'расход'
+        verbose_name_plural = 'расходы'
     
 class MoneyTransfer(models.Model):
     '''
