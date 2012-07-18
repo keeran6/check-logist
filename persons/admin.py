@@ -157,7 +157,10 @@ class DebtAdmin(ModelAdmin):
     ordering = ('-date', 'person')
     def get_list_display_links(self, request, list_display):
         return []
-
+    @csrf_protect_m
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        return ModelAdmin.changelist_view(self, request, extra_context=extra_context)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Broker, PersonAdmin)

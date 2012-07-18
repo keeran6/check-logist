@@ -42,7 +42,6 @@ class OrderAdmin(ModelAdmin):
                                                                                                   'payment_methods': PaymentMethod.objects.all().values()
                                                                                                   })
     form = OrderForm
-    save_on_top = True
     inlines = [OrderWorkInline]
     def get_form(self, request, obj=None, **kwargs):
         if request.method == 'POST' and obj is None:
