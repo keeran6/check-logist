@@ -18,6 +18,7 @@ from django.db import transaction
 from datetime import datetime, timedelta
 from django.contrib.admin.filters import SimpleListFilter
 from hephaestus import settings
+from django.db.models.aggregates import Min, Max, Sum
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
@@ -121,7 +122,7 @@ class HierarchyDateListFilter(SimpleListFilter):
                 except:
                     years = Debt.objects.extra(select={'year': "year(date)"}).distinct().values_list('year', flat=True)
                     return map(None, years, years)
-
+    
     def queryset(self, request, queryset):
         if self.value() is not None:
             try:
@@ -141,6 +142,7 @@ class HierarchyDateListFilter(SimpleListFilter):
                     except:
                         return queryset
             return queryset.filter(**{self.parameter_name: val})
+        return queryset
 
 class GreaterThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
     title = 'Не раньше'
@@ -159,8 +161,27 @@ class DebtAdmin(ModelAdmin):
         return []
     @csrf_protect_m
     def changelist_view(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        return ModelAdmin.changelist_view(self, request, extra_context=extra_context)
+        response = ModelAdmin.changelist_view(self, request, extra_context=extra_context)
+        queryset = response.context_data['cl'].get_query_set(request)
+        queryset_len = queryset.count()
+        if queryset_len == 0:
+            response.context_data['person'] = None
+        else:
+            
+            if request.GET.has_key('q'):
+                try:
+                    response.context_data['person'] = Person.objects.get(name__icontains=request.GET['q'])
+                except:
+                    response.context_data['person'] = None
+                else:
+                    min_date = queryset.aggregate(Min('date'))['date__min']
+                    max_date = queryset.aggregate(Max('date'))['date__max']
+                    start_debt = Debt.objects.filter(person=response.context_data['person'], date__lt=min_date).aggregate(Sum('total'))['total__sum'] or 0.0
+                    final_debt = Debt.objects.filter(person=response.context_data['person'], date__lte=max_date).aggregate(Sum('total'))['total__sum'] or 0.0
+                    response.context_data['start_debt'] = start_debt
+                    response.context_data['final_debt'] = final_debt
+                    response.context_data['period_debt'] = final_debt - start_debt
+        return response
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Broker, PersonAdmin)
