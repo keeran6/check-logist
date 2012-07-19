@@ -178,4 +178,4 @@ DATE_INPUT_FORMATS = \
 '%B %d, %Y', '%d %B %Y', '%d %B, %Y')
 TIME_INPUT_FROMATS = ('%H:%M', '%H:%M:%S')
 TIME_FORMAT = 'H:i'
-DATE_FORMAT = 'd.m.y'
+DATE_FORMAT = 'd.m.Y'

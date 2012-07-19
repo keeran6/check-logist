@@ -52,7 +52,7 @@ class OrderAdmin(ModelAdmin):
         return ModelAdmin.get_form(self, request, obj=obj, **kwargs)
     def response_add(self, request, obj, post_url_continue='../%s/'):
         messages.add_message(request, messages.WARNING, u'Заказ добавлен! Тщательно проверьте его на наличие ошибок.')
-        return HttpResponseRedirect(urlresolvers.reverse('admin:orders_order_change', args=(obj.id,)))#ModelAdmin.response_add(self, request, obj, post_url_continue=urlresolvers.reverse('admin:orders_order_add'))
+        return HttpResponseRedirect(urlresolvers.reverse('admin:orders_order_change', args=(obj.id,)))
     @csrf_protect_m
     def changelist_view(self, request, extra_context=None):
         return HttpResponseRedirect(urlresolvers.reverse('admin:orders_extendedorder_changelist'))

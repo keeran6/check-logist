@@ -34,8 +34,8 @@ class ExecutorAdmin(PersonAdmin):
     form = ExecutorForm
     readonly_fields = ('total_debt', 'appearance_date', 'last_contact',)
     @csrf_protect_m
-    def changelist_view(self, request, extra_context=None):
-        return HttpResponseRedirect(urlresolvers.reverse('admin:persons_extendedexecutor_changelist'))
+#    def changelist_view(self, request, extra_context=None):
+#        return HttpResponseRedirect(urlresolvers.reverse('admin:persons_extendedexecutor_changelist'))
     
     @csrf_protect_m
     @transaction.commit_on_success
@@ -70,18 +70,28 @@ class ExtendedExecutorAdmin(PersonAdmin):
     actions = [reject_order, accept_order, finish_order]
     @csrf_protect_m
     @transaction.commit_on_success
-    def change_view(self, request, object_id, form_url='', extra_context=None):\
-        return HttpResponseRedirect(urlresolvers.reverse('admin:persons_executor_change', args=(object_id,)))
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        response = ExecutorAdmin.change_view(ExecutorAdmin(Executor, self.admin_site), request, object_id, form_url, extra_context)
+        if isinstance(response, HttpResponseRedirect):
+            return HttpResponseRedirect(urlresolvers.reverse('admin:persons_extendedexecutor_changelist',))
+        return response
+        #return HttpResponseRedirect(urlresolvers.reverse('admin:persons_executor_change', args=(object_id,)))
     
     @csrf_protect_m
     @transaction.commit_on_success
     def delete_view(self, request, object_id, extra_context=None):
-        return HttpResponseRedirect(urlresolvers.reverse('admin:persons_executor_delete', args=(object_id,)))
+        response = ExecutorAdmin.delete_view(ExecutorAdmin(Executor, self.admin_site), request, object_id, extra_context)
+        if isinstance(response, HttpResponseRedirect):
+            return HttpResponseRedirect(urlresolvers.reverse('admin:persons_extendedexecutor_changelist',))
+        return response
     
     @csrf_protect_m
     @transaction.commit_on_success
     def add_view(self, request, form_url='', extra_context=None):
-        return HttpResponseRedirect(urlresolvers.reverse('admin:persons_executor_add'))
+        response = ExecutorAdmin.delete_view(ExecutorAdmin(Executor, self.admin_site), request, form_url, extra_context)
+        if isinstance(response, HttpResponseRedirect):
+            return HttpResponseRedirect(urlresolvers.reverse('admin:persons_extendedexecutor_changelist',))
+        return response
     
     
 class HierarchyDateListFilter(SimpleListFilter):

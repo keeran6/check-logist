@@ -41,7 +41,7 @@ class BaseExecutor(Person):
         verbose_name_plural = 'исполнители'
         abstract = True
         ordering = ('name',)
-    free_datetime = models.DateTimeField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
+    free_datetime = models.DateField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
     last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
     category = models.IntegerField(verbose_name='К', default=0, help_text='0 - новенький, 1 - регулярно работает, 2 - редко работает, 3 - почти не работает, 4 - не работает')
 
@@ -76,3 +76,14 @@ class Debt(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+
+class SamaraExecutorManager(models.Manager):
+    def get_query_set(self):
+        return super(SamaraExecutorManager, self).get_query_set().filter(branch_id=1)
+    
+class SamaraExecutor(ExtendedExecutor):
+    class Meta:
+        verbose_name = 'исполнитель'
+        verbose_name_plural = 'исполнители - Самара'
+        proxy = True
+    objects = SamaraExecutorManager()
