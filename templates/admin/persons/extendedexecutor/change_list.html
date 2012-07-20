@@ -1,0 +1,18 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<script type="text/javascript">
+(function($) {
+    $(document).ready(function() {
+        $('#result_list tr td:nth-child(4)').each(function() {
+			var dateParts = $(this).text().split(".");
+			var date = new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]);
+			if (date > new Date()) {
+				$(this).parent().css('background-color', '#cccccc');
+			}
+        });
+    });
+})(django.jQuery);
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.db.models import F
-from persons.models import Executor
+from persons.models import Executor, ExtendedExecutor
 from orders.models import ExtendedPlan, Order
 from prices.models import ExecutorStatus
 import re
@@ -9,7 +9,7 @@ import re
 class ExecutorForm(forms.ModelForm):
     
     class Meta:
-        model = Executor
+        model = ExtendedExecutor
     
     current_order = forms.ModelChoiceField(queryset=ExtendedPlan.objects.filter(executors_set__lt=F('executors_required')), label='Текущий заказ', required=False)
     

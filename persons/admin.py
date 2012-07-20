@@ -6,7 +6,7 @@ Created on 25.06.2012
 '''
 from django.contrib import admin
 from persons.models import Person, Customer, Broker, Dispatcher, Executor, ExtendedExecutor,\
-    Debt
+    Debt, SamaraExtendedExecutor
 from django.contrib.admin import ModelAdmin
 from persons.forms import ExecutorForm
 from orders.models import Work
@@ -16,8 +16,6 @@ from datetime import datetime, timedelta
 from django.contrib.admin.filters import SimpleListFilter
 from hephaestus import settings
 from django.db.models.aggregates import Min, Max, Sum
-from functools import update_wrapper
-from django.conf.urls import patterns, url
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
@@ -30,47 +28,14 @@ class PersonAdmin(ModelAdmin):
 class CustomerAdmin(PersonAdmin):
     exclude = ('birthday', 'address',)
     
-class ExecutorAdmin(PersonAdmin):
-    form = ExecutorForm
-    readonly_fields = ('total_debt', 'appearance_date', 'last_contact',)
-        
 class ExtendedExecutorAdmin(PersonAdmin):
     list_display = ('name', 'category', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'address', 'total_debt',)
     list_filter = ('branch', 'current_order_accepted')
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
-    #list_editable = ('current_order',)
     ordering = ('-current_order_accepted', 'current_order__id', 'category', 'free_datetime')
-
-    def get_urls(self):
-        def wrap(view):
-            def wrapper(*args, **kwargs):
-                return self.admin_site.admin_view(view)(*args, **kwargs)
-            return update_wrapper(wrapper, view)
-        info = self.model._meta.app_label, 'executor'
-        urlpatterns = patterns('',
-            url(r'^$',
-                wrap(self.changelist_view),
-                name='%s_%s_changelist' % info),
-            url(r'^add/$',
-                wrap(self.add_view),
-                name='%s_%s_add' % info),
-            url(r'^(.+)/history/$',
-                wrap(self.history_view),
-                name='%s_%s_history' % info),
-            url(r'^(.+)/delete/$',
-                wrap(self.delete_view),
-                name='%s_%s_delete' % info),
-            url(r'^(.+)/$',
-                wrap(self.change_view),
-                name='%s_%s_change' % info),
-        )
-        return super(ExtendedExecutorAdmin, self).get_urls() + urlpatterns
-
-    
-    def __init__(self, model, admin_site):
-        self.executor_admin = ExecutorAdmin(Executor, admin_site)
-        return super(ExtendedExecutorAdmin, self).__init__(model, admin_site)
-    
+    form = ExecutorForm
+    readonly_fields = ('total_debt', 'appearance_date', 'last_contact','current_order_accepted',)
+    change_list_template = 'admin/persons/extendedexecutor/change_list.html'
     def reject_order(self, request, queryset):
         for executor in queryset:
             Work.objects.filter(order=executor.current_order, executor=executor).delete()
@@ -95,15 +60,9 @@ class ExtendedExecutorAdmin(PersonAdmin):
             delay = (datetime.now() - executor.last_contact).seconds / 60
             if delay < 60:
                 messages.add_message(request, messages.INFO if delay > 15 else messages.ERROR, 'Исполнитель обзвонен %s минут назад' % delay)
-        return self.executor_admin.change_view(request, object_id, form_url, extra_context)
+        return super(ExtendedExecutorAdmin, self).change_view(request, object_id, form_url, extra_context)
     
-    def delete_view(self, request, object_id, extra_context=None):
-        return self.executor_admin.delete_view(request, object_id, extra_context)
-    
-    def add_view(self, request, form_url='', extra_context=None):
-        return self.executor_admin.add_view(request, form_url, extra_context)
-    
-    
+        
 class HierarchyDateListFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
@@ -206,4 +165,5 @@ admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Broker, PersonAdmin)
 admin.site.register(Dispatcher, PersonAdmin)
 admin.site.register(ExtendedExecutor, ExtendedExecutorAdmin)
+admin.site.register(SamaraExtendedExecutor, ExtendedExecutorAdmin)
 admin.site.register(Debt, DebtAdmin)

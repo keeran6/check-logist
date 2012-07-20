@@ -55,8 +55,6 @@ class ExtendedExecutor(BaseExecutor):
     class Meta(BaseExecutor.Meta):
         db_table = 'persons_executor_extended'
         verbose_name_plural = 'исполнители'
-    def get_executor(self):
-        return 
     current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
     current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)
     def age(self):
@@ -64,7 +62,17 @@ class ExtendedExecutor(BaseExecutor):
             return None
         return (datetime.now().date() - self.birthday).days / 365
     age.short_description = 'возраст'
-
+    
+    def save(self, force_insert=False, force_update=False, using=None):
+        self._meta.db_table = Executor._meta.db_table
+        executor_names = set([field.name for field in Executor._meta.fields])
+        extended_executor_names = set([field.name for field in self._meta.fields])
+        over_fields = extended_executor_names - executor_names
+        for field in reversed(self._meta.fields):
+            if field.name in over_fields:
+                self._meta.fields.remove(field)
+        print ExtendedExecutor._meta.local_fields
+        super(ExtendedExecutor, self).save(force_insert=False, force_update=False, using=None)
 class Debt(models.Model):
     class Meta:
         verbose_name = 'долг'
@@ -77,13 +85,13 @@ class Debt(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
 
-class SamaraExecutorManager(models.Manager):
+class SamaraExtendedExecutorManager(models.Manager):
     def get_query_set(self):
-        return super(SamaraExecutorManager, self).get_query_set().filter(branch_id=1)
+        return super(SamaraExtendedExecutorManager, self).get_query_set().filter(branch_id=1)
     
-class SamaraExecutor(ExtendedExecutor):
+class SamaraExtendedExecutor(ExtendedExecutor):
     class Meta:
         verbose_name = 'исполнитель'
         verbose_name_plural = 'исполнители - Самара'
         proxy = True
-    objects = SamaraExecutorManager()
+    objects = SamaraExtendedExecutorManager()
