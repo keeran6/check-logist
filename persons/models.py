@@ -64,15 +64,10 @@ class ExtendedExecutor(BaseExecutor):
     age.short_description = 'возраст'
     
     def save(self, force_insert=False, force_update=False, using=None):
-        self._meta.db_table = Executor._meta.db_table
-        executor_names = set([field.name for field in Executor._meta.fields])
-        extended_executor_names = set([field.name for field in self._meta.fields])
-        over_fields = extended_executor_names - executor_names
-        for field in reversed(self._meta.fields):
-            if field.name in over_fields:
-                self._meta.fields.remove(field)
-        print ExtendedExecutor._meta.local_fields
-        super(ExtendedExecutor, self).save(force_insert=False, force_update=False, using=None)
+        if force_insert and force_update:
+            raise ValueError("Cannot force both insert and updating in model saving.")
+        self.save_base(cls=Executor, using=using, force_insert=force_insert, force_update=force_update)
+
 class Debt(models.Model):
     class Meta:
         verbose_name = 'долг'

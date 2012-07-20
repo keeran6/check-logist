@@ -68,6 +68,11 @@ class ExtendedOrder(BaseOrder):
     executors_verified       = models.IntegerField(default=0, verbose_name='=')
     quantity = models.FloatField(default=0, verbose_name='колво')
     total = models.FloatField(default=0, verbose_name='сумма')
+    def save(self, force_insert=False, force_update=False, using=None):
+        if force_insert and force_update:
+            raise ValueError("Cannot force both insert and updating in model saving.")
+        self.save_base(cls=Order, using=using, force_insert=force_insert, force_update=force_update)
+        
         
 
 class ExtendedPlanManager(models.Manager):
