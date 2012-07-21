@@ -10,7 +10,7 @@ class ExecutorForm(forms.ModelForm):
     
     class Meta:
         model = Executor
-    current_order = forms.ChoiceField(choices=[(obj.pk, obj) for obj in ExtendedPlan.objects.filter(executors_set__lt=F('executors_required'))])
+    current_order = forms.ModelChoiceField(queryset=ExtendedPlan.objects.filter(executors_set__lt=F('executors_required')), required=False, label='Текущий заказ')
     
     def __init__(self, *args, **kwargs):
         if not kwargs.has_key('initial'):
@@ -31,14 +31,14 @@ class ExecutorForm(forms.ModelForm):
             self.fields['current_order'].widget.attrs['disabled'] = True
         
     def clean_current_order(self):
-        return Order.objects.get(pk=self.cleaned_data['current_order'])
-         
+        if self.cleaned_data['current_order']:
+            return Order.objects.get(pk=self.cleaned_data['current_order'].pk)
+    def clean_phone(self):
+        pat = re.compile('(?:8|\+7)(\d{3})(\d{3})(\d{2})(\d{2})')
+        return pat.sub(r'8-\1-\2-\3-\4', self.cleaned_data['phone'])
     def save(self, commit=True):
         instance = super(ExecutorForm, self).save(commit=commit)
         if instance.pk and self.cleaned_data['current_order']:
-            instance.work_set.create(order=Order.objects.get(pk=self.cleaned_data['current_order'].pk), executor_id=instance.pk, executor_status=ExecutorStatus.objects.get(name=u'Найм'))
-        # phone corrector
-        pat = re.compile('(?:8|\+7)(\d{3})(\d{3})(\d{2})(\d{2})')
-        instance.phone = pat.sub(r'8-\1-\2-\3-\4', instance.phone)
+            instance.work_set.create(order=self.cleaned_data['current_order'], executor_id=instance.pk, executor_status=ExecutorStatus.objects.get(name=u'Найм'))
         instance.save()
         return instance

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from new import classobj
 from django.db import models
 from prices.models import Branch
 from datetime import datetime
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from common.models import ViewManager
 class Person(models.Model):
     class Meta:
         verbose_name = 'лицо'
@@ -44,30 +46,27 @@ class BaseExecutor(Person):
     free_datetime = models.DateField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
     last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
     category = models.IntegerField(verbose_name='К', default=0, help_text='0 - новенький, 1 - регулярно работает, 2 - редко работает, 3 - почти не работает, 4 - не работает')
+    def age(self):
+        if self.birthday:
+            return (datetime.now().date() - self.birthday).days / 365
+    age.short_description = 'возраст'
 
 class Executor(BaseExecutor):
-    class Meta(BaseExecutor.Meta):
-        ordering = ('name',)
-    def get_current_order(self):
-        return ExtendedExecutor.objects.get(pk=self).current_order
-    current_order = property(get_current_order)
+    pass
+
 class ExtendedExecutor(BaseExecutor):
     class Meta(BaseExecutor.Meta):
         db_table = 'persons_executor_extended'
-        verbose_name_plural = 'исполнители'
+    base_model = Executor
+    objects = ViewManager()
     current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
-    current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)
-    def age(self):
-        if self.birthday is None:
-            return None
-        return (datetime.now().date() - self.birthday).days / 365
-    age.short_description = 'возраст'
-    
+    current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)    
     def save(self, force_insert=False, force_update=False, using=None):
         if force_insert and force_update:
             raise ValueError("Cannot force both insert and updating in model saving.")
-        self.save_base(cls=Executor, using=using, force_insert=force_insert, force_update=force_update)
-
+        self.save_base(cls=self.base_model, using=using, force_insert=force_insert, force_update=force_update)
+    def delete(self, using=None):
+        return self.base_model.objects.get(pk=self.pk).delete()
 class Debt(models.Model):
     class Meta:
         verbose_name = 'долг'
@@ -80,13 +79,10 @@ class Debt(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
 
-class SamaraExtendedExecutorManager(models.Manager):
+class BranchExtendedExecutorManager(ViewManager):
+    def __init__(self, branch_id):
+        self.branch_id = branch_id
+        super(BranchExtendedExecutorManager, self).__init__()
     def get_query_set(self):
-        return super(SamaraExtendedExecutorManager, self).get_query_set().filter(branch_id=1)
-    
-class SamaraExtendedExecutor(ExtendedExecutor):
-    class Meta:
-        verbose_name = 'исполнитель'
-        verbose_name_plural = 'исполнители - Самара'
-        proxy = True
-    objects = SamaraExtendedExecutorManager()
+        return super(BranchExtendedExecutorManager, self).get_query_set().filter(branch_id=self.branch_id, category__lt=4)
+branch_executors = [classobj(str(branch.english_name) + 'ExtendedExecutor', (ExtendedExecutor,), {'objects': BranchExtendedExecutorManager(branch_id=branch.id), 'Meta': classobj('Meta', (ExtendedExecutor.Meta,), {'proxy': True, 'verbose_name_plural': u'исполнители - ' + branch.name})}) for branch in Branch.objects.all()]
