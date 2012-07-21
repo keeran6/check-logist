@@ -9,6 +9,7 @@ class Branch(models.Model):
     def __unicode__(self):
         return self.name
     name = models.CharField(max_length=32, blank=False, null=False, verbose_name='название')
+    english_name = models.CharField(max_length=32, blank=False, null=False, verbose_name='название по-английски')
     
 class PaymentMethod(models.Model):
     '''
