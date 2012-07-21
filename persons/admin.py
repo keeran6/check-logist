@@ -129,3 +129,12 @@ class LessThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
     title = 'Не позже'
     parameter_name = 'date__lte'
 
+
+admin.site.register(Person, PersonAdmin)
+admin.site.register(Customer, CustomerAdmin)
+admin.site.register(Broker, PersonAdmin)
+admin.site.register(Dispatcher, PersonAdmin)
+admin.site.register(ExtendedExecutor, ExtendedExecutorAdmin)
+admin.site.register(Debt, DebtAdmin)
+for branch_executor_model in branch_executors:
+    admin.site.register(branch_executor_model, ExtendedExecutorAdmin)
