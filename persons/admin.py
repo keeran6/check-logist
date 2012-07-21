@@ -150,6 +150,7 @@ class DebtAdmin(ModelAdmin):
                     response.context_data['person'] = None
                 else:
 
+        return response
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Broker, PersonAdmin)
