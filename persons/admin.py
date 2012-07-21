@@ -5,13 +5,12 @@ Created on 25.06.2012
 @author: Admin
 '''
 from django.contrib import admin
-from persons.models import Person, Customer, Broker, Dispatcher, Executor, ExtendedExecutor,\
+from persons.models import Person, Customer, Broker, Dispatcher, Executor, ExtendedExecutor, \
     Debt, branch_executors
 from django.contrib.admin import ModelAdmin
 from persons.forms import ExecutorForm
 from orders.models import Work
 from django.contrib import messages
-from django.contrib.auth.admin import csrf_protect_m
 from datetime import datetime, timedelta
 from django.contrib.admin.filters import SimpleListFilter
 from hephaestus import settings
@@ -34,7 +33,7 @@ class ExtendedExecutorAdmin(PersonAdmin):
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
     ordering = ('-current_order_accepted', 'current_order__id', 'category', 'free_datetime')
     form = ExecutorForm
-    readonly_fields = ('total_debt', 'appearance_date', 'last_contact','current_order_accepted',)
+    readonly_fields = ('total_debt', 'appearance_date', 'last_contact', 'current_order_accepted',)
     change_list_template = 'admin/persons/extendedexecutor/change_list.html'
     def reject_order(self, request, queryset):
         for executor in queryset:
@@ -149,7 +148,13 @@ class DebtAdmin(ModelAdmin):
                 except:
                     response.context_data['person'] = None
                 else:
-
+                    min_date = queryset.aggregate(Min('date'))['date__min']
+                    max_date = queryset.aggregate(Max('date'))['date__max']
+                    start_debt = Debt.objects.filter(person=response.context_data['person'], date__lt=min_date).aggregate(Sum('total'))['total__sum'] or 0.0
+                    final_debt = Debt.objects.filter(person=response.context_data['person'], date__lte=max_date).aggregate(Sum('total'))['total__sum'] or 0.0
+                    response.context_data['start_debt'] = start_debt
+                    response.context_data['final_debt'] = final_debt
+                    response.context_data['period_debt'] = final_debt - start_debt
         return response
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
