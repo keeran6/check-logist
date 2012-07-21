@@ -62,4 +62,63 @@ class ExtendedExecutorAdmin(PersonAdmin):
                 messages.add_message(request, messages.INFO if delay > 15 else messages.ERROR, 'Исполнитель обзвонен %s минут назад' % delay)
         return super(ExtendedExecutorAdmin, self).change_view(request, object_id, form_url, extra_context)
     
-        
+
+class HierarchyDateListFilter(SimpleListFilter):
+
+    def lookups(self, request, model_admin):
+        if not request.GET.has_key(self.parameter_name):
+            years = Debt.objects.extra(select={'year': "year(date)"}).distinct().values_list('year', flat=True)
+            return map(None, years, years)
+        try:
+            vals = []
+            current = datetime.strptime(request.GET[self.parameter_name], '%Y')
+            for month in xrange(1, 13):
+                current = current.replace(month=month)
+                string_current = current.strftime('%m.%Y')
+                vals.append((string_current, string_current))
+            return tuple(vals)
+        except:
+            try:
+                now = datetime.strptime(request.GET[self.parameter_name], '%m.%Y')
+                current = now.replace(day=1)
+                vals = []
+                while current.month == now.month:
+                    string_current = current.strftime(settings.DATE_INPUT_FORMATS[0])
+                    vals.append((string_current, string_current))
+                    current += timedelta(days=1)
+                return tuple(vals)
+            except:
+                try:
+                    now = datetime.strptime(request.GET[self.parameter_name], '%d.%m.%Y')
+                    current = now.replace(day=1)
+                    vals = []
+                    while current.month == now.month:
+                        string_current = current.strftime(settings.DATE_INPUT_FORMATS[0])
+                        vals.append((string_current, string_current))
+                        current += timedelta(days=1)
+                    return tuple(vals)
+                except:
+                    years = Debt.objects.extra(select={'year': "year(date)"}).distinct().values_list('year', flat=True)
+                    return map(None, years, years)
+    
+    def queryset(self, request, queryset):
+        if self.value() is not None:
+            try:
+                val = datetime.strptime(self.value(), '%Y')
+                val = val.replace(month=1, day=1)
+                if self.parameter_name.endswith('lte'):
+                    val = val.replace(year=val.year + 1)
+            except:
+                try:
+                    val = datetime.strptime(self.value(), '%m.%Y')
+                    val = val.replace(day=1)
+                    if self.parameter_name.endswith('lte'):
+                        val = val.replace(month=val.month + 1)
+                except:
+                    try:
+                        val = datetime.strptime(self.value(), '%d.%m.%Y')
+                    except:
+                        return queryset
+            return queryset.filter(**{self.parameter_name: val})
+        return queryset
+
