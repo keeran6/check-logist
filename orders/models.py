@@ -4,6 +4,7 @@ from prices.models import Branch, PaymentMethod, Service, ExecutorStatus
 from django.db.models.base import Model
 from persons.models import Executor
 from django.db.models import F
+from common.models import ViewManager
 
 class Work(Model):
     '''
@@ -63,17 +64,19 @@ class Order(BaseOrder):
 class ExtendedOrder(BaseOrder):
     class Meta(BaseOrder.Meta):
         db_table = 'orders_order_extended'
+    base_model = Order
+    objects = ViewManager()
     executors_accepted  = models.IntegerField(default=0, verbose_name='+')
     executors_set       = models.IntegerField(default=0, verbose_name='-')
-    executors_verified       = models.IntegerField(default=0, verbose_name='=')
-    quantity = models.FloatField(default=0, verbose_name='колво')
-    total = models.FloatField(default=0, verbose_name='сумма')
+    executors_verified  = models.IntegerField(default=0, verbose_name='=')
+    quantity            = models.FloatField(default=0, verbose_name='колво')
+    total               = models.FloatField(default=0, verbose_name='сумма')
     def save(self, force_insert=False, force_update=False, using=None):
         if force_insert and force_update:
             raise ValueError("Cannot force both insert and updating in model saving.")
-        self.save_base(cls=Order, using=using, force_insert=force_insert, force_update=force_update)
-        
-        
+        self.save_base(cls=self.base_model, using=using, force_insert=force_insert, force_update=force_update)
+    def delete(self, using=None):
+        return self.base_model.objects.get(pk=self.pk).delete()
 
 class ExtendedPlanManager(models.Manager):
     def get_query_set(self):
