@@ -13,15 +13,12 @@ from django.core import urlresolvers
 from orders.forms import OrderForm, WorkForm
 from persons.models import Dispatcher
 from prices.models import Price, PaymentMethod
-from functools import update_wrapper
-from django.conf.urls import patterns, url
 
 
 class OrderWorkInline(admin.TabularInline):
     form = WorkForm
     model = Work
-    extra = 1
-    max_num = 10
+    extra = 0
 
 class ExtendedOrderAdmin(ModelAdmin):
     fieldsets = (
@@ -43,6 +40,7 @@ class ExtendedOrderAdmin(ModelAdmin):
     list_select_related = True
     form = OrderForm
     inlines = [OrderWorkInline]
+    change_form_template = 'admin/orders/extendedorder/change_form.html'
     def change_view(self, request, object_id, form_url='', extra_context=None):
         return ModelAdmin.change_view(self, request, object_id, form_url=form_url, extra_context={
                                                                                                   'prices': Price.objects.all().values(),
@@ -71,7 +69,7 @@ class ExtendedOrderAdmin(ModelAdmin):
         return ModelAdmin.get_form(self, request, obj=obj, **kwargs)
     def response_add(self, request, obj, post_url_continue='../%s/'):
         messages.add_message(request, messages.WARNING, u'Заказ добавлен! Тщательно проверьте его на наличие ошибок.')
-        return HttpResponseRedirect(urlresolvers.reverse('admin:orders_order_change', args=(obj.id,)))
+        return HttpResponseRedirect(urlresolvers.reverse('admin:orders_extendedorder_change', args=(obj.id,)))
     
 class WorkAdmin(ModelAdmin):
     list_display = ('order', 'executor', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')

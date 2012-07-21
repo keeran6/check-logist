@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.forms import formsets
 from orders.models import Order, Work
 from persons.models import Customer, Broker
 import re
@@ -149,3 +150,5 @@ class WorkForm(forms.models.ModelForm):
         super(WorkForm, self).__init__(*args, **kwargs)
         self.fields['quantity'].widget.attrs['onKeyUp'] = 'quantityChanged(this.id)'
         self.fields['total'].widget.attrs['onKeyUp'] = 'totalChanged(this.id)'
+    def clean_order(self):
+        return Order.objects.get(pk=self.cleaned_data['order'].pk)
