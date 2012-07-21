@@ -129,6 +129,13 @@ class LessThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
     title = 'Не позже'
     parameter_name = 'date__lte'
 
+class DebtAdmin(ModelAdmin):
+    list_display = ('person', 'date', 'total', 'content_object', 'note')
+    search_fields = ('person__name',)
+    list_filter = [GreaterThanOrEqualHierarchyDateListFilter, LessThanOrEqualHierarchyDateListFilter]
+    ordering = ('-date', 'person')
+    def get_list_display_links(self, request, list_display):
+        return []
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
