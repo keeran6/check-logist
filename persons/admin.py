@@ -140,6 +140,15 @@ class DebtAdmin(ModelAdmin):
         response = ModelAdmin.changelist_view(self, request, extra_context=extra_context)
         queryset = response.context_data['cl'].get_query_set(request)
         queryset_len = queryset.count()
+        if queryset_len == 0:
+            response.context_data['person'] = None
+        else:
+            if request.GET.has_key('q'):
+                try:
+                    response.context_data['person'] = Person.objects.get(name__icontains=request.GET['q'])
+                except:
+                    response.context_data['person'] = None
+                else:
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
