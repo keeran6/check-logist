@@ -136,6 +136,10 @@ class DebtAdmin(ModelAdmin):
     ordering = ('-date', 'person')
     def get_list_display_links(self, request, list_display):
         return []
+    def changelist_view(self, request, extra_context=None):
+        response = ModelAdmin.changelist_view(self, request, extra_context=extra_context)
+        queryset = response.context_data['cl'].get_query_set(request)
+        queryset_len = queryset.count()
 
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Customer, CustomerAdmin)
