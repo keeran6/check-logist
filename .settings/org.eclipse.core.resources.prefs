@@ -4,7 +4,6 @@ encoding//cash/models.py=utf-8
 encoding//orders/admin.py=utf-8
 encoding//orders/forms.py=utf-8
 encoding//orders/models.py=utf-8
-encoding//persons/admin.py=utf-8
 encoding//persons/forms.py=utf-8
 encoding//persons/models.py=utf-8
 encoding//prices/admin.py=utf-8
