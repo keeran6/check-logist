@@ -122,3 +122,10 @@ class HierarchyDateListFilter(SimpleListFilter):
             return queryset.filter(**{self.parameter_name: val})
         return queryset
 
+class GreaterThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
+    title = 'Не раньше'
+    parameter_name = 'date__gte'
+class LessThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
+    title = 'Не позже'
+    parameter_name = 'date__lte'
+
