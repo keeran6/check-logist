@@ -5,7 +5,6 @@ from django.db.models.base import Model
 from persons.models import Executor
 from django.db.models import F
 from common.models import ViewManager
-from django.conf.urls import url
 
 class Work(Model):
     '''

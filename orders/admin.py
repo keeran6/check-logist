@@ -13,8 +13,6 @@ from django.core import urlresolvers
 from orders.forms import OrderForm, WorkForm
 from persons.models import Dispatcher
 from prices.models import Price, PaymentMethod
-from functools import update_wrapper
-from django.conf.urls import patterns, url
 
 class OrderWorkInline(admin.TabularInline):
     form = WorkForm

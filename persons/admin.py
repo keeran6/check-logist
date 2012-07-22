@@ -15,9 +15,6 @@ from datetime import datetime, timedelta
 from django.contrib.admin.filters import SimpleListFilter
 from hephaestus import settings
 from django.db.models.aggregates import Min, Max, Sum
-from django.db.models.base import get_absolute_url
-from django.conf.urls import url, patterns
-from functools import update_wrapper
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
