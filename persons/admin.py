@@ -132,6 +132,7 @@ class DebtAdmin(ModelAdmin):
     list_display = ('person', 'date', 'total', 'content_object_url', 'note')
     search_fields = ('person__name',)
     list_filter = [GreaterThanOrEqualHierarchyDateListFilter, LessThanOrEqualHierarchyDateListFilter]
+    ordering = ('-date', 'total')
     def get_list_display_links(self, request, list_display):
         return []
 
