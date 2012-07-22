@@ -15,6 +15,9 @@ from datetime import datetime, timedelta
 from django.contrib.admin.filters import SimpleListFilter
 from hephaestus import settings
 from django.db.models.aggregates import Min, Max, Sum
+from django.db.models.base import get_absolute_url
+from django.conf.urls import url, patterns
+from functools import update_wrapper
 
 class PersonAdmin(ModelAdmin):
     readonly_fields = ('total_debt', 'appearance_date',)
@@ -28,10 +31,10 @@ class CustomerAdmin(PersonAdmin):
     exclude = ('birthday', 'address',)
     
 class ExtendedExecutorAdmin(PersonAdmin):
-    list_display = ('name', 'category', 'free_datetime', 'current_order', 'current_order_accepted', 'note', 'phone', 'address', 'total_debt',)
+    list_display = ('name', 'category', 'free_datetime', 'current_order_accepted', 'current_order', 'executors_count', 'previous_order', 'note', 'phone', 'address', 'total_debt',)
     list_filter = ('branch', 'current_order_accepted')
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
-    ordering = ('-current_order_accepted', 'current_order__id', 'category', 'free_datetime')
+    ordering = ('category', 'id',)
     form = ExecutorForm
     readonly_fields = ('total_debt', 'appearance_date', 'last_contact', 'current_order_accepted',)
     change_list_template = 'admin/persons/extendedexecutor/change_list.html'
@@ -51,8 +54,6 @@ class ExtendedExecutorAdmin(PersonAdmin):
         messages.add_message(request, messages.WARNING, 'Заказы помечены как завершенные исполнителями!')
     finish_order.short_description = 'Исполнитель завершил заказ'
     actions = [reject_order, accept_order, finish_order]
-    
-
     def change_view(self, request, object_id, form_url='', extra_context=None):
         if request.method != 'POST':
             executor = Executor.objects.get(pk=object_id)
@@ -129,12 +130,12 @@ class LessThanOrEqualHierarchyDateListFilter(HierarchyDateListFilter):
     parameter_name = 'date__lte'
 
 class DebtAdmin(ModelAdmin):
-    list_display = ('person', 'date', 'total', 'content_object', 'note')
+    list_display = ('person', 'date', 'total', 'content_object_url', 'note')
     search_fields = ('person__name',)
     list_filter = [GreaterThanOrEqualHierarchyDateListFilter, LessThanOrEqualHierarchyDateListFilter]
-    ordering = ('-date', 'person')
     def get_list_display_links(self, request, list_display):
         return []
+
     def changelist_view(self, request, extra_context=None):
         response = ModelAdmin.changelist_view(self, request, extra_context=extra_context)
         queryset = response.context_data['cl'].get_query_set(request)

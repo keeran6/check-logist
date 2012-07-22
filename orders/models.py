@@ -5,6 +5,7 @@ from django.db.models.base import Model
 from persons.models import Executor
 from django.db.models import F
 from common.models import ViewManager
+from django.conf.urls import url
 
 class Work(Model):
     '''
@@ -71,12 +72,14 @@ class ExtendedOrder(BaseOrder):
     executors_verified  = models.IntegerField(default=0, verbose_name='=')
     quantity            = models.FloatField(default=0, verbose_name='колво')
     total               = models.FloatField(default=0, verbose_name='сумма')
+    executors           = models.CharField(max_length=1024, verbose_name='исполнители')
     def save(self, force_insert=False, force_update=False, using=None):
         if force_insert and force_update:
             raise ValueError("Cannot force both insert and updating in model saving.")
         self.save_base(cls=self.base_model, using=using, force_insert=force_insert, force_update=force_update)
     def delete(self, using=None):
         return self.base_model.objects.get(pk=self.pk).delete()
+
 
 class ExtendedPlanManager(models.Manager):
     def get_query_set(self):

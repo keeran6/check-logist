@@ -8,9 +8,20 @@
         $('#result_list tr td:nth-child(4)').each(function() {
 			var dateParts = $(this).text().split(".");
 			var date = new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]);
-			if (date > new Date()) {
+			var today = new Date();
+			if (date > today) {
 				$(this).parent().css('background-color', '#cccccc');
+			} else if  (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
+				$(this).parent().css('background-color', '#ccffcc');
 			}
+        });
+		$('#result_list tr td:nth-child(5)').each(function() {
+			if ($(this).find(">:first-child").attr('src').indexOf('icon-no.gif') != -1) {
+				$(this).parent().css('background-color', '#ffcccc');
+			} else if  ($(this).find(">:first-child").attr('src').indexOf('icon-yes.gif') != -1) {
+				$(this).parent().css('background-color', '#99ccff');
+			}
+			console.log($(this).text());
         });
     });
 })(django.jQuery);

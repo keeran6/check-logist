@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from new import classobj
 from django.db import models
+from django.db.models import Q
 from prices.models import Branch
 from datetime import datetime
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from common.models import ViewManager
+import orders.models
+from django.core import urlresolvers
+
 class Person(models.Model):
     class Meta:
         verbose_name = 'лицо'
@@ -60,13 +64,20 @@ class ExtendedExecutor(BaseExecutor):
     base_model = Executor
     objects = ViewManager()
     current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
-    current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)    
+    current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)
+    executors_count        = models.IntegerField(verbose_name='И', blank=True, null=True)
     def save(self, force_insert=False, force_update=False, using=None):
         if force_insert and force_update:
             raise ValueError("Cannot force both insert and updating in model saving.")
         self.save_base(cls=self.base_model, using=using, force_insert=force_insert, force_update=force_update)
     def delete(self, using=None):
         return self.base_model.objects.get(pk=self.pk).delete()
+    def previous_order(self):
+        try:
+            return orders.models.Work.objects.filter(executor_id=self.pk).filter(Q(finished=True) | Q(quantity__gt=0.0) | Q(order__datetime__lt=datetime.now().date())).order_by('-order__datetime')[0].order
+        except IndexError:
+            pass
+    previous_order.short_description = u'предыдущий заказ'
 class Debt(models.Model):
     class Meta:
         verbose_name = 'долг'
@@ -78,6 +89,17 @@ class Debt(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+    def content_object_url(self):
+        replaceable_models = (orders.models.ExtendedOrder,)
+        for model in replaceable_models:
+            if self.content_object.__class__ == model.base_model:
+                meta = model._meta
+            else:
+                meta = self.content_object._meta
+        url = urlresolvers.reverse('admin:%s_%s_change' % (meta.app_label, meta.module_name), args=(self.content_object.pk,))
+        return '<a href="%s">%s</a>' % (url, self.content_object) 
+    content_object_url.allow_tags = True
+    content_object_url.short_description = 'Объект'
 
 class BranchExtendedExecutorManager(ViewManager):
     def __init__(self, branch_id):

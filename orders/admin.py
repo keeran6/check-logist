@@ -13,7 +13,8 @@ from django.core import urlresolvers
 from orders.forms import OrderForm, WorkForm
 from persons.models import Dispatcher
 from prices.models import Price, PaymentMethod
-
+from functools import update_wrapper
+from django.conf.urls import patterns, url
 
 class OrderWorkInline(admin.TabularInline):
     form = WorkForm
@@ -32,11 +33,11 @@ class ExtendedOrderAdmin(ModelAdmin):
             'fields': ('sms', 'cut_sms')
         }),
     )
-    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'payment_method', 'quantity', 'total', 'start',)
+    list_display = ('datetime', 'customer', 'branch', 'executors_accepted', 'executors_required', 'executors_verified', 'payment_method', 'quantity', 'total', 'start', 'executors')
     list_filter = ('branch', 'payment_method', 'dispatcher')
     ordering = ('-datetime', 'id')
     date_hierarchy = 'datetime'
-    search_fields = ['customer__name', 'branch__name', 'start', 'payment_method__name', 'dispatcher__name']
+    search_fields = ['customer__name', 'branch__name', 'start', 'payment_method__name', 'dispatcher__name', 'executors']
     list_select_related = True
     form = OrderForm
     inlines = [OrderWorkInline]
@@ -45,7 +46,8 @@ class ExtendedOrderAdmin(ModelAdmin):
         return ModelAdmin.change_view(self, request, object_id, form_url=form_url, extra_context={
                                                                                                   'prices': Price.objects.all().values(),
                                                                                                   'payment_methods': PaymentMethod.objects.all().values()
-                                                                                                  })
+                                                                                          })
+
     def get_inline_instances(self, request):
         inline_instances = []
         for inline_class in self.inlines:
