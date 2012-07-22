@@ -58,7 +58,9 @@ class ExtendedExecutorAdmin(PersonAdmin):
             if delay < 60:
                 messages.add_message(request, messages.INFO if delay > 15 else messages.ERROR, 'Исполнитель обзвонен %s минут назад' % delay)
         return super(ExtendedExecutorAdmin, self).change_view(request, object_id, form_url, extra_context)
-    
+
+class BranchExtendedExecutorAdmin(ExtendedExecutorAdmin):
+    list_filter = []
 
 class HierarchyDateListFilter(SimpleListFilter):
 
@@ -161,4 +163,4 @@ admin.site.register(Dispatcher, PersonAdmin)
 admin.site.register(ExtendedExecutor, ExtendedExecutorAdmin)
 admin.site.register(Debt, DebtAdmin)
 for branch_executor_model in branch_executors:
-    admin.site.register(branch_executor_model, ExtendedExecutorAdmin)
+    admin.site.register(branch_executor_model, BranchExtendedExecutorAdmin)

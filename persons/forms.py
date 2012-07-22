@@ -44,6 +44,8 @@ class ExecutorForm(forms.ModelForm):
         instance = super(ExecutorForm, self).save(commit=commit)
         if instance.pk and self.cleaned_data['current_order']:
             for _ in xrange(self.cleaned_data['executors_count']):
-                instance.work_set.create(order=self.cleaned_data['current_order'], executor_id=instance.pk, executor_status=ExecutorStatus.objects.get(name=u'Найм'))
+                work = Work(order=self.cleaned_data['current_order'], executor_id=instance.pk, executor_status=ExecutorStatus.objects.get(name=u'Найм'))
+                work.fee_through = None
+                work.save()
         instance.save()
         return instance
