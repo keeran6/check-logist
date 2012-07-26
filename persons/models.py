@@ -25,6 +25,7 @@ class Person(models.Model):
     appearance_date = models.DateField(verbose_name='появился', null=True, blank=True, default=datetime.today)
     branch          = models.ForeignKey(Branch, verbose_name='филиал', null=True, blank=True)
     note            = models.CharField(max_length=128, verbose_name='примечание', blank=True)
+    description     = models.TextField(max_length=1024, blank=True, null=True, verbose_name='подробное описание')
 
 class Customer(Person):
     class Meta:
