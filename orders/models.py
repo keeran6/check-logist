@@ -22,12 +22,12 @@ class Work(Model):
     finished         = models.BooleanField(default=False, verbose_name='выполнено')
     executor_status  = models.ForeignKey(ExecutorStatus, verbose_name='занятость')
     fee_through      = models.ForeignKey('persons.Person', null=True, blank=True, verbose_name='расчет через')
-    total            = models.FloatField(default=0.0, verbose_name='стоимость работы')
-    broker_sum       = models.FloatField(default=0.0, verbose_name='комиссия')
-    executor_sum     = models.FloatField(default=0.0, verbose_name='зарплата')
-    executor_balance = models.FloatField(default=0.0, verbose_name='баланс исполнителя')
-    customer_balance = models.FloatField(default=0.0, verbose_name='баланс клиента')
-    broker_balance   = models.FloatField(default=0.0, verbose_name='баланс посредника')
+    total            = models.FloatField(default=0.0, verbose_name='стоимость для клиента')
+    broker_sum       = models.FloatField(default=0.0, verbose_name='зарплата посредника')
+    executor_sum     = models.FloatField(default=0.0, verbose_name='зарплата исполнителя')
+    executor_balance = models.FloatField(default=0.0, verbose_name='долг исполнителя')
+    customer_balance = models.FloatField(default=0.0, verbose_name='долг клиента')
+    broker_balance   = models.FloatField(default=0.0, verbose_name='долг посредника')
     
 
 class BaseOrder(Model):

@@ -6,7 +6,7 @@ Created on 25.06.2012
 '''
 from django.contrib import admin
 from persons.models import Person, Customer, Broker, Dispatcher, Executor, ExtendedExecutor, \
-    Debt, branch_executors
+    Debt, branch_executors, branch_potential_executors
 from django.contrib.admin import ModelAdmin
 from persons.forms import ExecutorForm
 from orders.models import Work
@@ -22,13 +22,21 @@ class PersonAdmin(ModelAdmin):
     list_filter = ('branch',)
     search_fields = ['name', 'phone', 'branch__name']
     ordering = ('name',)
+    def refresh_debt(self, request, queryset):
+        from django.db import connection, transaction
+        connection.cursor().execute('update persons_person as t1 set total_debt = IFNULL((select sum(total) from persons_debt where t1.id = persons_debt.person_id), 0.0)')
+        transaction.commit_unless_managed()
+        messages.add_message(request, messages.WARNING, 'Долги обновлены!')
+    refresh_debt.short_description = 'Обновить долги'
+    actions = [refresh_debt]
+        
         
     
 class CustomerAdmin(PersonAdmin):
     exclude = ('birthday', 'address',)
     
 class ExtendedExecutorAdmin(PersonAdmin):
-    list_display = ('name', 'category', 'free_datetime', 'current_order_accepted', 'current_order', 'executors_count', 'previous_order', 'note', 'phone', 'address', 'total_debt',)
+    list_display = ('name', 'category', 'state', 'last_contact', 'note', 'current_order_accepted', 'current_order', 'executors_count', 'free_datetime', 'previous_order', 'phone', 'address', 'total_debt',)
     list_filter = ('branch', 'current_order_accepted')
     search_fields = ['name', 'current_order__customer__name', 'note', 'phone', 'address']
     ordering = ('category', 'id',)
@@ -50,7 +58,7 @@ class ExtendedExecutorAdmin(PersonAdmin):
             Work.objects.filter(order=executor.current_order, executor=executor).update(finished=True)
         messages.add_message(request, messages.WARNING, 'Заказы помечены как завершенные исполнителями!')
     finish_order.short_description = 'Исполнитель завершил заказ'
-    actions = [reject_order, accept_order, finish_order]
+    
     def change_view(self, request, object_id, form_url='', extra_context=None):
         if request.method != 'POST':
             executor = Executor.objects.get(pk=object_id)
@@ -58,7 +66,11 @@ class ExtendedExecutorAdmin(PersonAdmin):
             if delay < 60:
                 messages.add_message(request, messages.INFO if delay > 15 else messages.ERROR, 'Исполнитель обзвонен %s минут назад' % delay)
         return super(ExtendedExecutorAdmin, self).change_view(request, object_id, form_url, extra_context)
-
+    def refresh(self, request, queryset):
+        Executor.objects.filter(last_contact__lt=datetime.now().date()).update(state=0)
+        messages.add_message(request, messages.WARNING, 'Исполнители обновлены!')
+    refresh.short_description = 'Обновить исполнителя'
+    actions = [reject_order, accept_order, finish_order, refresh]
 class BranchExtendedExecutorAdmin(ExtendedExecutorAdmin):
     list_filter = []
 
@@ -132,7 +144,7 @@ class DebtAdmin(ModelAdmin):
     list_display = ('person', 'date', 'total', 'content_object_url', 'note')
     search_fields = ('person__name',)
     list_filter = [GreaterThanOrEqualHierarchyDateListFilter, LessThanOrEqualHierarchyDateListFilter]
-    ordering = ('-date', 'total')
+    ordering = ('-date', '-content_type__id')
     def get_list_display_links(self, request, list_display):
         return []
 
@@ -165,3 +177,5 @@ admin.site.register(ExtendedExecutor, ExtendedExecutorAdmin)
 admin.site.register(Debt, DebtAdmin)
 for branch_executor_model in branch_executors:
     admin.site.register(branch_executor_model, BranchExtendedExecutorAdmin)
+for branch_potential_executor_model in branch_potential_executors:
+    admin.site.register(branch_potential_executor_model, BranchExtendedExecutorAdmin)

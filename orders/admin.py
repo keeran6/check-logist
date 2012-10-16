@@ -72,7 +72,7 @@ class ExtendedOrderAdmin(ModelAdmin):
         return HttpResponseRedirect(urlresolvers.reverse('admin:orders_extendedorder_change', args=(obj.id,)))
     
 class WorkAdmin(ModelAdmin):
-    list_display = ('order', 'executor', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
+    list_display = ('order', 'executor', 'executor_status', 'fee_through', 'quantity', 'total', 'executor_sum', 'executor_balance')
     ordering = ('-order__datetime', 'id')
     search_fields = ['order__customer__name', 'executor__name']
     list_select_related = True

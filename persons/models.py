@@ -10,6 +10,14 @@ from common.models import ViewManager
 import orders.models
 from django.core import urlresolvers
 
+STATES = (
+          (0, u''),
+          (1, u'Свободен'),
+          (2, u'Отключен'),
+          (3, u'Не берет'),
+          (4, u'Освободится')
+          )
+
 class Person(models.Model):
     class Meta:
         verbose_name = 'лицо'
@@ -21,9 +29,9 @@ class Person(models.Model):
     phone           = models.CharField(max_length=128, verbose_name='телефон', blank=True)
     birthday        = models.DateField(verbose_name='дата рождения', null=True, blank=True)
     address         = models.CharField(max_length=256, verbose_name='адрес', blank=True)
-    total_debt      = models.FloatField(default=0.0, verbose_name='задолженность', null=False, blank=True)
+    total_debt      = models.FloatField(default=0.0, verbose_name='долг', null=False, blank=True)
     appearance_date = models.DateField(verbose_name='появился', null=True, blank=True, default=datetime.today)
-    branch          = models.ForeignKey(Branch, verbose_name='филиал', null=True, blank=True)
+    branch          = models.ForeignKey(Branch, verbose_name='филиал', null=True, blank=False)
     note            = models.CharField(max_length=128, verbose_name='примечание', blank=True)
     description     = models.TextField(max_length=1024, blank=True, null=True, verbose_name='подробное описание')
 
@@ -51,6 +59,7 @@ class BaseExecutor(Person):
     free_datetime = models.DateField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
     last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
     category = models.IntegerField(verbose_name='К', default=0, help_text='0 - новенький, 1 - регулярно работает, 2 - редко работает, 3 - почти не работает, 4 - не работает')
+    state = models.IntegerField(verbose_name='состояние', choices=STATES, blank=True, default=0)
     def age(self):
         if self.birthday:
             return (datetime.now().date() - self.birthday).days / 365
@@ -65,7 +74,7 @@ class ExtendedExecutor(BaseExecutor):
     base_model = Executor
     objects = ViewManager()
     current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
-    current_order_accepted = models.NullBooleanField(verbose_name='принят', blank=True, null=True)
+    current_order_accepted = models.NullBooleanField(verbose_name='+', blank=True, null=True)
     executors_count        = models.IntegerField(verbose_name='И', blank=True, null=True)
     def save(self, force_insert=False, force_update=False, using=None):
         if force_insert and force_update:
@@ -107,5 +116,12 @@ class BranchExtendedExecutorManager(ViewManager):
         self.branch_id = branch_id
         super(BranchExtendedExecutorManager, self).__init__()
     def get_query_set(self):
-        return super(BranchExtendedExecutorManager, self).get_query_set().filter(branch_id=self.branch_id, category__lt=4)
+        return super(BranchExtendedExecutorManager, self).get_query_set().filter(branch_id=self.branch_id, category__lt=4, category__gt=0)
 branch_executors = [classobj(str(branch.english_name) + 'ExtendedExecutor', (ExtendedExecutor,), {'objects': BranchExtendedExecutorManager(branch_id=branch.id), 'Meta': classobj('Meta', (ExtendedExecutor.Meta,), {'proxy': True, 'verbose_name_plural': u'исполнители - ' + branch.name})}) for branch in Branch.objects.all()]
+class BranchPotentialExtendedExecutorManager(ViewManager):
+    def __init__(self, branch_id):
+        self.branch_id = branch_id
+        super(BranchPotentialExtendedExecutorManager, self).__init__()
+    def get_query_set(self):
+        return super(BranchPotentialExtendedExecutorManager, self).get_query_set().filter(branch_id=self.branch_id, category__lt=1)
+branch_potential_executors = [classobj(str(branch.english_name) + 'PotentialExtendedExecutor', (ExtendedExecutor,), {'objects': BranchPotentialExtendedExecutorManager(branch_id=branch.id), 'Meta': classobj('Meta', (ExtendedExecutor.Meta,), {'proxy': True, 'verbose_name_plural': u'потенциальные - ' + branch.name})}) for branch in Branch.objects.all()]

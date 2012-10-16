@@ -9,16 +9,16 @@ from django.contrib.admin import ModelAdmin
 from cash.models import Income, Expense, MoneyTransfer
 
 class MoneyOperationAdmin(ModelAdmin):
-    list_display = ('date', 'person', 'total', 'settlement_item', 'note',)
+    list_display = ('date', 'person', 'total', 'note', 'settlement_item')
     ordering = ('-date', 'id')
     date_hierarchy = 'date'
-    search_fields = ['person__name', 'settlement_item__name', 'settlement_item__code']
+    search_fields = ['person__name', 'note',]
 
 class MoneyTransferAdmin(ModelAdmin):
     list_display = ('date', 'from_person', 'to_person', 'total', 'note',)
     ordering = ('-date', 'id')
     date_hierarchy = 'date'
-    search_fields = ['from_person__name', 'to_person__name', 'settlement_item__name', 'settlement_item__code']
+    search_fields = ['from_person__name', 'to_person__name', 'note',]
 
 
 admin.site.register(Income, MoneyOperationAdmin)

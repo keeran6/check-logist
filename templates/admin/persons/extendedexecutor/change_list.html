@@ -1,28 +1,36 @@
-{% extends "admin/change_list.html" %}
+﻿{% extends "admin/change_list.html" %}
 
 {% block extrahead %}
 {{ block.super }}
 <script type="text/javascript">
 (function($) {
     $(document).ready(function() {
-        $('#result_list tr td:nth-child(4)').each(function() {
+		$('#result_list tr td:nth-child(4)').each(function() {
+			if ($(this).text() == 'Отключен' || $(this).text() == 'Не берет')
+				$(this).parent().css('background-color', '#ffcc66');
+			if ($(this).text() == 'Свободен')
+				$(this).parent().css('background-color', '#ccff99');
+			if ($(this).text() == 'Освободится')
+				$(this).parent().css('background-color', '#ffff99');
+
+			});
+		$('#result_list tr td:nth-child(10)').each(function() {
 			var dateParts = $(this).text().split(".");
 			var date = new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]);
 			var today = new Date();
 			if (date > today) {
 				$(this).parent().css('background-color', '#cccccc');
-			} else if  (date.getFullYear() == today.getFullYear() && date.getMonth() == today.getMonth() && date.getDate() == today.getDate()) {
-				$(this).parent().css('background-color', '#ccffcc');
 			}
         });
-		$('#result_list tr td:nth-child(5)').each(function() {
+		$('#result_list tr td:nth-child(7)').each(function() {
 			if ($(this).find(">:first-child").attr('src').indexOf('icon-no.gif') != -1) {
-				$(this).parent().css('background-color', '#ffcccc');
+				$(this).parent().css('background-color', '#ff9999');
 			} else if  ($(this).find(">:first-child").attr('src').indexOf('icon-yes.gif') != -1) {
 				$(this).parent().css('background-color', '#99ccff');
 			}
 			console.log($(this).text());
         });
+
     });
 })(django.jQuery);
 </script>
