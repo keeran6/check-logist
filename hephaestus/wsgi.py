@@ -14,6 +14,8 @@ framework.
 
 """
 import os
+activate_this = '/home/keeran/Envs/django/bin/activate_this.py' 
+execfile(activate_this, dict(__file__=activate_this))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hephaestus.settings")
 

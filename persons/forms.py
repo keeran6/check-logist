@@ -10,8 +10,8 @@ class ExecutorForm(forms.ModelForm):
     
     class Meta:
         model = Executor
-    current_order = forms.ModelChoiceField(queryset=ExtendedPlan.objects.filter(executors_set__lt=F('executors_required')), required=False, label='Текущий заказ')
-    executors_count = forms.IntegerField(required=False, label='Исполнителей на текущем заказе')
+    current_order = forms.ModelChoiceField(queryset=ExtendedPlan.objects.filter(executors_set__lt=F('executors_required')), required=False, label='Current order')
+    executors_count = forms.IntegerField(required=False, label='Executor Count')
     
     def __init__(self, *args, **kwargs):
         if not kwargs.has_key('initial'):
@@ -45,7 +45,7 @@ class ExecutorForm(forms.ModelForm):
         if instance.pk and self.cleaned_data['current_order']:
             instance.state = 0
             for _ in xrange(self.cleaned_data['executors_count']):
-                work = Work(order=self.cleaned_data['current_order'], executor_id=instance.pk, executor_status=ExecutorStatus.objects.get(name=u'Найм'))
+                work = Work(order=self.cleaned_data['current_order'], executor_id=instance.pk, executor_status=ExecutorStatus.objects.get(name=u'work'))
                 work.fee_through = None
                 work.save()
         instance.save()

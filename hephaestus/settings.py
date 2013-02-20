@@ -6,7 +6,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-     ('Alex Longer', 'hephaestus2000@gmail.com'),
+     ('keeran', 'keeran6@gmail.com'),
 )
 
 
@@ -15,11 +15,12 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'hephaestus_hephaestus',                      # Or path to database file if using sqlite3.
-        'USER': 'hephaestus',                  # Not used with sqlite3.
-        'PASSWORD': 'dxn3dxn3',                 # Not used with sqlite3.
-        'HOST': 'mysql.alwaysdata.com',                      # Set to empty string for localhost. Not used with sqlite3.
+        'NAME': 'keeran$keerandb',                      # Or path to database file if using sqlite3.
+        'USER': 'keeran',                  # Not used with sqlite3.
+        'PASSWORD': 'knk123',                 # Not used with sqlite3.
+        'HOST': 'mysql.server',                   # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        #'TEST_CHARSET': 'utf8mb4',
     }
 }
 
@@ -34,8 +35,7 @@ TIME_ZONE = 'Europe/Moscow'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'ru-ru'
-
+LANGUAGE_CODE = 'in-EN'
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -128,6 +128,7 @@ INSTALLED_APPS = (
     'persons',
     'orders',
     'cash',
+    #'south',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -138,15 +139,15 @@ INSTALLED_APPS = (
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
+    #'filters': { 
+     #   'require_debug_false': { 
+      #      '()': 'django.utils.log.RequireDebugFalse'
+       # }
+    #},
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
+            #'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },

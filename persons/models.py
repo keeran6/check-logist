@@ -20,50 +20,50 @@ STATES = (
 
 class Person(models.Model):
     class Meta:
-        verbose_name = 'лицо'
-        verbose_name_plural = 'лица'
+        verbose_name = 'person'
+        verbose_name_plural = 'persons'
         ordering = ('name',)
     def __unicode__(self):
         return self.name
-    name            = models.CharField(max_length=128, verbose_name='имя', blank=False, null=False)
-    phone           = models.CharField(max_length=128, verbose_name='телефон', blank=True)
-    birthday        = models.DateField(verbose_name='дата рождения', null=True, blank=True)
-    address         = models.CharField(max_length=256, verbose_name='адрес', blank=True)
-    total_debt      = models.FloatField(default=0.0, verbose_name='долг', null=False, blank=True)
-    appearance_date = models.DateField(verbose_name='появился', null=True, blank=True, default=datetime.today)
-    branch          = models.ForeignKey(Branch, verbose_name='филиал', null=True, blank=False)
-    note            = models.CharField(max_length=128, verbose_name='примечание', blank=True)
-    description     = models.TextField(max_length=1024, blank=True, null=True, verbose_name='подробное описание')
+    name            = models.CharField(max_length=128, verbose_name='Name', blank=False, null=False)
+    phone           = models.CharField(max_length=128, verbose_name='Phone', blank=True)
+    birthday        = models.DateField(verbose_name='Birthday', null=True, blank=True)
+    address         = models.CharField(max_length=256, verbose_name='Address', blank=True)
+    total_debt      = models.FloatField(default=0.0, verbose_name='Debt', null=False, blank=True)
+    appearance_date = models.DateField(verbose_name='Appearance_date', null=True, blank=True, default=datetime.today)
+    branch          = models.ForeignKey(Branch, verbose_name='Branch', null=True, blank=False)
+    note            = models.CharField(max_length=128, verbose_name='notes', blank=True)
+    description     = models.TextField(max_length=1024, blank=True, null=True, verbose_name='Description')
 
 class Customer(Person):
     class Meta:
-        verbose_name = 'заказчик'
-        verbose_name_plural = 'заказчики'
+        verbose_name = 'Customer'
+        verbose_name_plural = 'Customers'
 
 class Broker(Person):
     class Meta:
-        verbose_name = 'посредник'
-        verbose_name_plural = 'посредники'
+        verbose_name = 'Broker'
+        verbose_name_plural = 'Brokers'
 
 class Dispatcher(Person):
     class Meta:
-        verbose_name = 'диспетчер'
-        verbose_name_plural = 'диспетчеры'
+        verbose_name = 'Dispatcher'
+        verbose_name_plural = 'Dispatchers'
         
 class BaseExecutor(Person):
     class Meta:
-        verbose_name = 'исполнитель'
-        verbose_name_plural = 'исполнители'
+        verbose_name = 'Executor'
+        verbose_name_plural = 'Executors'
         abstract = True
         ordering = ('name',)
-    free_datetime = models.DateField(verbose_name='освободится', default=datetime.now, blank=True, null=True)
-    last_contact  = models.DateTimeField(verbose_name='контакт', auto_now=True)
+    free_datetime = models.DateField(verbose_name='FreeDate', default=datetime.now, blank=True, null=True)
+    last_contact  = models.DateTimeField(verbose_name='Lastdate', auto_now=True)
     category = models.IntegerField(verbose_name='К', default=0, help_text='0 - новенький, 1 - регулярно работает, 2 - редко работает, 3 - почти не работает, 4 - не работает')
-    state = models.IntegerField(verbose_name='состояние', choices=STATES, blank=True, default=0)
+    state = models.IntegerField(verbose_name='State', choices=STATES, blank=True, default=0)
     def age(self):
         if self.birthday:
             return (datetime.now().date() - self.birthday).days / 365
-    age.short_description = 'возраст'
+    age.short_description = 'age'
 
 class Executor(BaseExecutor):
     pass
@@ -73,7 +73,7 @@ class ExtendedExecutor(BaseExecutor):
         db_table = 'persons_executor_extended'
     base_model = Executor
     objects = ViewManager()
-    current_order          = models.ForeignKey('orders.Order', verbose_name='текущий заказ', blank=True, null=True)
+    current_order          = models.ForeignKey('orders.Order', verbose_name='Current order', blank=True, null=True)
     current_order_accepted = models.NullBooleanField(verbose_name='+', blank=True, null=True)
     executors_count        = models.IntegerField(verbose_name='И', blank=True, null=True)
     def save(self, force_insert=False, force_update=False, using=None):
@@ -87,15 +87,15 @@ class ExtendedExecutor(BaseExecutor):
             return orders.models.Work.objects.filter(executor_id=self.pk).filter(Q(finished=True) | Q(quantity__gt=0.0) | Q(order__datetime__lt=datetime.now().date())).order_by('-order__datetime')[0].order
         except IndexError:
             pass
-    previous_order.short_description = u'предыдущий заказ'
+    previous_order.short_description = u'previous order'
 class Debt(models.Model):
     class Meta:
-        verbose_name = 'долг'
-        verbose_name_plural = 'долги'
-    person = models.ForeignKey(Person, verbose_name='лицо')
-    date = models.DateField(verbose_name='дата')
-    total = models.FloatField(verbose_name='сумма')
-    note = models.CharField(max_length=128, verbose_name='примечание')
+        verbose_name = 'Debt'
+        verbose_name_plural = 'Debts'
+    person = models.ForeignKey(Person, verbose_name='person')
+    date = models.DateField(verbose_name='date')
+    total = models.FloatField(verbose_name='Total')
+    note = models.CharField(max_length=128, verbose_name='Notes')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
@@ -109,7 +109,7 @@ class Debt(models.Model):
         url = urlresolvers.reverse('admin:%s_%s_change' % (meta.app_label, meta.module_name), args=(self.content_object.pk,))
         return '<a href="%s">%s</a>' % (url, self.content_object) 
     content_object_url.allow_tags = True
-    content_object_url.short_description = 'Объект'
+    content_object_url.short_description = 'Content'
 
 class BranchExtendedExecutorManager(ViewManager):
     def __init__(self, branch_id):

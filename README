@@ -1,1 +1,6 @@
+Updated 20Feb2013
+    -Modified appropriately to English
+    -Made it work on pythonanywhere.com
+    -Python 1.3.5 or prefereably 1.4 is recommended.
+    
 Django-admin-based system for logistics company accounting. 
